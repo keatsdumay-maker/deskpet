@@ -9,7 +9,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px}
 
 /* Bubble styles */
-.bubble{position:absolute;top:0;left:50%;transform:translateX(-50%);padding:4px 10px;font-size:10px;font-family:-apple-system,sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;z-index:10;pointer-events:none}
+.bubble{position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:4px 10px;font-size:10px;font-family:-apple-system,sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;z-index:10;pointer-events:none}
 .bubble.show{opacity:1}
 .bubble.normal{background:#fff;color:#333;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .bubble.love{background:#FFF0F5;color:#D4467A;border-radius:14px;box-shadow:0 1px 4px rgba(212,70,122,.15)}
@@ -103,8 +103,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 </head>
 <body>
 <div class="container">
-<div class="bubble normal" id="bubble"></div>
 <div class="crab idle" id="crab">
+<div class="bubble normal" id="bubble"></div>
 <div class="star" id="star">&#10022;</div>
 <div class="zzz">Z</div>
 <div class="angry-mark">!</div>
@@ -127,8 +127,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 <div class="leg"></div>
 <div class="leg"></div>
 </div>
-</div>
 <div class="shadow"></div>
+</div>
 </div>
 <script>
 const crab=document.getElementById('crab');
