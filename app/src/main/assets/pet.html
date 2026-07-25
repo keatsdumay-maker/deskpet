@@ -7,20 +7,25 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px}
-.bubble{position:absolute;top:2px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid #333;padding:3px 6px;font-size:10px;font-family:sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;border-radius:2px;z-index:10}
+.bubble{position:absolute;top:2px;left:50%;transform:translateX(-50%);background:#fff;padding:4px 10px;font-size:10px;font-family:-apple-system,sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;border-radius:14px;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .bubble.show{opacity:1}
-.bubble::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid #333}
+.bubble::after{content:'';position:absolute;bottom:-4px;left:50%;margin-left:-3px;width:6px;height:6px;background:#fff;transform:rotate(45deg);box-shadow:1px 1px 2px rgba(0,0,0,.08)}
 .crab{position:relative;display:flex;flex-direction:column;align-items:center}
 .body-row{display:flex;align-items:center}
 .hand{width:6px;height:4px;background:#E8A088}
+.left-hand{transform-origin:right center;animation:wave-l 2s ease-in-out infinite}
+.right-hand{transform-origin:left center;animation:wave-r 2s ease-in-out infinite}
+@keyframes wave-l{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg) translateY(-1px)}}
+@keyframes wave-r{0%,100%{transform:rotate(0)}50%{transform:rotate(8deg) translateY(-1px)}}
 .body{width:40px;height:32px;background:#E8A088;position:relative}
 .eye{position:absolute;width:5px;height:10px;background:#111;top:10px}
 .eye.left{left:10px}
 .eye.right{right:10px}
+.face-slot{position:absolute;top:7px;left:0;width:100%;pointer-events:none;display:flex;justify-content:center}
+.hat-slot{height:8px;display:flex;justify-content:center;align-items:flex-end}
 .legs{display:flex;justify-content:center;gap:4px}
 .leg{width:5px;height:6px;background:#E8A088}
-.shadow{width:32px;height:4px;background:rgba(0,0,0,.12);margin-top:1px;border-radius:1px}
-.accessory{position:absolute;top:-8px;left:50%;transform:translateX(-50%)}
+.shadow{width:32px;height:4px;background:rgba(0,0,0,.12);margin-top:1px}
 @keyframes idle-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 @keyframes leg-step{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.7)}}
 .crab.idle{animation:idle-float 2s ease-in-out infinite}
@@ -44,7 +49,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .blush.right{right:4px}
 .crab.shy .blush{display:block}
 .crab.shy{transform:scale(.9)}
-.crab.shy .hand{display:none}
 .star{position:absolute;top:-8px;font-size:8px;opacity:0}
 .crab.sparkle .star{opacity:1;animation:twinkle 1s ease infinite}
 @keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
@@ -57,16 +61,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 <div class="star" id="star">✦</div>
 <div class="zzz">Z</div>
 <div class="angry-mark">!</div>
-<div class="accessory" id="accessory"></div>
+<div class="hat-slot" id="hat-slot"></div>
 <div class="body-row">
-<div class="hand"></div>
+<div class="hand left-hand"></div>
 <div class="body">
 <div class="eye left"></div>
 <div class="eye right"></div>
+<div class="face-slot" id="face-slot"></div>
 <div class="blush left"></div>
 <div class="blush right"></div>
 </div>
-<div class="hand"></div>
+<div class="hand right-hand"></div>
 </div>
 <div class="legs">
 <div class="leg"></div>
@@ -80,53 +85,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 <script>
 const crab=document.getElementById('crab');
 const bubble=document.getElementById('bubble');
+const hatSlot=document.getElementById('hat-slot');
+const faceSlot=document.getElementById('face-slot');
 let currentState='idle';
 let stateTimer=null;
 let accessoryIndex=0;
 const accessories=['none','hardhat','headphones','glasses','bow'];
-
-function setState(s){
-crab.className='crab '+s;
-currentState=s;
-}
-
-function showBubble(t){
-bubble.textContent=t;
-bubble.classList.add('show');
-if(stateTimer)clearTimeout(stateTimer);
-stateTimer=setTimeout(()=>{bubble.classList.remove('show')},2000);
-}
-
+function setState(s){crab.className='crab '+s;currentState=s}
+function showBubble(t){bubble.textContent=t;bubble.classList.add('show');if(stateTimer)clearTimeout(stateTimer);stateTimer=setTimeout(()=>{bubble.classList.remove('show')},2000)}
 function rp(a){return a[Math.floor(Math.random()*a.length)]}
-
-function autoReturn(ms){
-setTimeout(()=>{setState('idle')},ms);
-}
-
+function autoReturn(ms){setTimeout(()=>{setState('idle')},ms)}
 function setAccessory(type){
-const acc=document.getElementById('accessory');
-acc.innerHTML='';
-if(type==='hardhat')acc.innerHTML='<div style="width:20px;height:5px;background:#FFD700;margin:0 auto"></div>';
-else if(type==='headphones')acc.innerHTML='<div style="width:30px;height:3px;background:#333;border-radius:8px 8px 0 0;margin:0 auto"></div>';
-else if(type==='glasses')acc.innerHTML='<div style="display:flex;gap:2px;justify-content:center"><div style="width:8px;height:6px;border:1.5px solid #333"></div><div style="width:8px;height:6px;border:1.5px solid #333"></div></div>';
-else if(type==='bow')acc.innerHTML='<div style="width:0;height:0;border-left:5px solid #FF69B4;border-right:5px solid #FF69B4;border-top:3px solid transparent;border-bottom:3px solid transparent;margin:0 auto"></div>';
+hatSlot.innerHTML='';faceSlot.innerHTML='';
+if(type==='hardhat')hatSlot.innerHTML='<div style="width:24px;height:6px;background:#FFD700"></div>';
+else if(type==='headphones')hatSlot.innerHTML='<div style="width:32px;height:4px;background:#333;border-radius:6px 6px 0 0"></div>';
+else if(type==='glasses')faceSlot.innerHTML='<div style="display:flex;gap:3px;justify-content:center"><div style="width:9px;height:7px;border:1.5px solid #333"></div><div style="width:9px;height:7px;border:1.5px solid #333"></div></div>';
+else if(type==='bow')hatSlot.innerHTML='<div style="width:0;height:0;border-left:5px solid #FF69B4;border-right:5px solid #FF69B4;border-top:3px solid transparent;border-bottom:3px solid transparent"></div>';
 }
-
 class PetEngine{
-onTap(){
-showBubble(rp(['别戳了！','干嘛！','哎呀','嗯？','戳戳戳']));
-autoReturn(2000);
-}
-onDoubleTap(){
-setState('happy');
-showBubble(rp(['嘿嘿♥','开心！','喜欢你~','哇!']));
-autoReturn(3000);
-}
-onLongPress(){
-accessoryIndex=(accessoryIndex+1)%accessories.length;
-setAccessory(accessories[accessoryIndex]);
-showBubble(accessories[accessoryIndex]==='none'?'脱掉了~':'好看吗？');
-}
+onTap(){showBubble(rp(['别戳了！','干嘛！','哎呀','嗯？','戳戳戳']));autoReturn(2000)}
+onDoubleTap(){setState('happy');showBubble(rp(['嘿嘿♥','开心！','喜欢你~','哇!']));autoReturn(3000)}
+onLongPress(){accessoryIndex=(accessoryIndex+1)%accessories.length;setAccessory(accessories[accessoryIndex]);showBubble(accessories[accessoryIndex]==='none'?'脱掉了~':'好看吗？')}
 setMood(m){setState(m);autoReturn(5000)}
 }
 window.petEngine=new PetEngine();
