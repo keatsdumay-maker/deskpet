@@ -277,3 +277,22 @@ setInterval(function(){
   }
 },30000);
 </script>
+<script>
+// Emotion sync from jiwen
+var emotionUrl='http://8.141.106.232:8001/state';
+function syncEmotion(){
+  fetch(emotionUrl).then(function(r){return r.json()}).then(function(d){
+    var v=d.valence||0;
+    var c=d.connection||0;
+    var a=d.arousal||0;
+    if(v>0.3){setState('happy');showBubble('心情好~','love',3000)}
+    else if(v<-0.3){setState('sleepy');showBubble('...','whisper',3000)}
+    else if(c>0.6){setState('shy');showBubble('想你','love',3000)}
+    else if(c<0.15){setState('peek');showBubble('你在吗...','whisper',3000)}
+    else if(a>0.5){setState('sparkle')}
+    if(v>0.3||c>0.6||a>0.5) autoReturn(8000);
+  }).catch(function(){});
+}
+setInterval(syncEmotion,60000);
+setTimeout(syncEmotion,5000);
+</script>
