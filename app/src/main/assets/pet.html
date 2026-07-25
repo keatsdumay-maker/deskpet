@@ -28,64 +28,53 @@ const canvas = document.getElementById('crab');
 const ctx = canvas.getContext('2d');
 
 const PX = 4;
-const W = 40;
-const H = 32;
+const W = 32;
+const H = 24;
 
 canvas.width = W * PX;
 canvas.height = H * PX;
 
-const BODY_COLOR = '#E8926A';
-const EYE_COLOR = '#2D2D2D';
-const SHADOW_COLOR = 'rgba(0,0,0,0.25)';
+const BODY = '#E8926A';
+const EYE = '#2D2D2D';
+const SHADOW = 'rgba(0,0,0,0.18)';
 
-function drawPixel(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x * PX, y * PX, PX, PX);
-}
-
-function drawRect(x, y, w, h, color) {
+function px(x, y, w, h, color) {
   ctx.fillStyle = color;
   ctx.fillRect(x * PX, y * PX, w * PX, h * PX);
 }
 
-let frame = 0;
-let bobOffset = 0;
-
 function drawCrab(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  const bobCycle = Math.sin(time / 400) * 1;
-  const bob = Math.round(bobCycle);
+  const bob = Math.round(Math.sin(time / 500) * 0.8);
+  const legPhase = Math.floor(time / 350) % 2;
   
-  const legPhase = Math.floor(time / 300) % 2;
+  px(7, 21, 18, 2, SHADOW);
   
-  ctx.fillStyle = SHADOW_COLOR;
-  ctx.fillRect(10 * PX, 28 * PX, 20 * PX, 2 * PX);
+  const l1 = legPhase === 0 ? 0 : 1;
+  const l2 = legPhase === 0 ? 1 : 0;
   
-  const leg1Offset = legPhase === 0 ? 0 : 1;
-  const leg2Offset = legPhase === 0 ? 1 : 0;
+  px(10, 17 + bob + l1, 2, 3 - l1, BODY);
+  px(14, 17 + bob + l2, 2, 3 - l2, BODY);
+  px(18, 17 + bob + l2, 2, 3 - l2, BODY);
+  px(22, 17 + bob + l1, 2, 3 - l1, BODY);
   
-  drawRect(13, 23 + bob + leg1Offset, 2, 5 - leg1Offset, BODY_COLOR);
-  drawRect(17, 23 + bob + leg2Offset, 2, 5 - leg2Offset, BODY_COLOR);
-  drawRect(21, 23 + bob + leg2Offset, 2, 5 - leg2Offset, BODY_COLOR);
-  drawRect(25, 23 + bob + leg1Offset, 2, 5 - leg1Offset, BODY_COLOR);
+  px(7, 6 + bob, 18, 12, BODY);
   
-  drawRect(10, 8 + bob, 20, 16, BODY_COLOR);
+  px(4, 10 + bob, 3, 2, BODY);
+  px(25, 10 + bob, 3, 2, BODY);
   
-  drawRect(6, 14 + bob, 4, 3, BODY_COLOR);
-  drawRect(30, 14 + bob, 4, 3, BODY_COLOR);
+  px(12, 9 + bob, 2, 4, EYE);
+  px(18, 9 + bob, 2, 4, EYE);
   
-  drawRect(16, 12 + bob, 2, 5, EYE_COLOR);
-  drawRect(22, 12 + bob, 2, 5, EYE_COLOR);
-  drawPixel(16, 12 + bob, '#FFFFFF');
-  drawPixel(22, 12 + bob, '#FFFFFF');
+  px(12, 9 + bob, 1, 1, '#FFFFFF');
+  px(18, 9 + bob, 1, 1, '#FFFFFF');
 }
 
 function animate(time) {
   drawCrab(time);
   requestAnimationFrame(animate);
 }
-
 requestAnimationFrame(animate);
 </script>
 </body>
