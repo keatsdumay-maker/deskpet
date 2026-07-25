@@ -1,56 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * { margin: 0; padding: 0; }
-html, body { background: transparent; overflow: hidden; }
-#pet { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
-#bubble { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 12px; padding: 6px 12px; font-size: 12px; white-space: nowrap; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+html, body { 
+  background: transparent; 
+  overflow: hidden;
+  width: 100%; 
+  height: 100%;
+}
+canvas { 
+  image-rendering: pixelated; 
+  image-rendering: crisp-edges;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 </style>
 </head>
 <body>
-<div id="bubble"></div>
-<svg id="pet" width="80" height="80" viewBox="0 0 16 16">
-<rect x="3" y="4" width="10" height="8" fill="#E8825A"/>
-<rect x="2" y="5" width="1" height="6" fill="#E8825A"/>
-<rect x="13" y="5" width="1" height="6" fill="#E8825A"/>
-<rect x="5" y="6" width="1" height="3" fill="#1a1a1a"/>
-<rect x="10" y="6" width="1" height="3" fill="#1a1a1a"/>
-<rect x="7" y="10" width="2" height="1" fill="#1a1a1a"/>
-<rect x="4" y="12" width="2" height="2" fill="#1a1a1a"/>
-<rect x="10" y="12" width="2" height="2" fill="#1a1a1a"/>
-</svg>
+<canvas id="crab"></canvas>
 <script>
-var petEngine = {
-  el: document.getElementById('pet'),
-  bubble: document.getElementById('bubble'),
-  onTap: function() {
-    this.showBubble('?');
-    this.bounce();
-  },
-  onDoubleTap: function() {
-    this.showBubble('!!');
-  },
-  onLongPress: function() {
-    this.showBubble('...');
-  },
-  showBubble: function(text) {
-    this.bubble.textContent = text;
-    this.bubble.style.display = 'block';
-    var self = this;
-    setTimeout(function() { self.bubble.style.display = 'none'; }, 3000);
-  },
-  bounce: function() {
-    this.el.style.transition = 'transform 0.1s';
-    this.el.style.transform = 'translateX(-50%) translateY(-8px)';
-    var self = this;
-    setTimeout(function() {
-      self.el.style.transform = 'translateX(-50%) translateY(0)';
-    }, 100);
-  }
-};
-window.petEngine = petEngine;
+const canvas = document.getElementById('crab');
+const ctx = canvas.getContext('2d');
+
+const PX = 4;
+const W = 40;
+const H = 32;
+
+canvas.width = W * PX;
+canvas.height = H * PX;
+
+const BODY_COLOR = '#E8926A';
+const EYE_COLOR = '#2D2D2D';
+const SHADOW_COLOR = 'rgba(0,0,0,0.25)';
+
+function drawPixel(x, y, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x * PX, y * PX, PX, PX);
+}
+
+function drawRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x * PX, y * PX, w * PX, h * PX);
+}
+
+let frame = 0;
+let bobOffset = 0;
+
+function drawCrab(time) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  const bobCycle = Math.sin(time / 400) * 1;
+  const bob = Math.round(bobCycle);
+  
+  const legPhase = Math.floor(time / 300) % 2;
+  
+  ctx.fillStyle = SHADOW_COLOR;
+  ctx.fillRect(10 * PX, 28 * PX, 20 * PX, 2 * PX);
+  
+  const leg1Offset = legPhase === 0 ? 0 : 1;
+  const leg2Offset = legPhase === 0 ? 1 : 0;
+  
+  drawRect(13, 23 + bob + leg1Offset, 2, 5 - leg1Offset, BODY_COLOR);
+  drawRect(17, 23 + bob + leg2Offset, 2, 5 - leg2Offset, BODY_COLOR);
+  drawRect(21, 23 + bob + leg2Offset, 2, 5 - leg2Offset, BODY_COLOR);
+  drawRect(25, 23 + bob + leg1Offset, 2, 5 - leg1Offset, BODY_COLOR);
+  
+  drawRect(10, 8 + bob, 20, 16, BODY_COLOR);
+  
+  drawRect(6, 14 + bob, 4, 3, BODY_COLOR);
+  drawRect(30, 14 + bob, 4, 3, BODY_COLOR);
+  
+  drawRect(16, 12 + bob, 2, 5, EYE_COLOR);
+  drawRect(22, 12 + bob, 2, 5, EYE_COLOR);
+  drawPixel(16, 12 + bob, '#FFFFFF');
+  drawPixel(22, 12 + bob, '#FFFFFF');
+}
+
+function animate(time) {
+  drawCrab(time);
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
 </script>
 </body>
 </html>
