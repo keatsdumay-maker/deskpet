@@ -268,25 +268,12 @@ setInterval(function(){
 },4000);
 </script>
 <script>
-// Random walk every 25-35 seconds
-(function(){
-  function doWalk(){
-    if(currentState!=='idle') return;
+// Walk in place randomly
+setInterval(function(){
+  if(currentState!=='idle') return;
+  if(Math.random()<0.3){
     setState('walk');
-    var dir = Math.random()>0.5 ? 1 : -1;
-    var dist = 5 + Math.floor(Math.random()*10);
-    crab.style.transition='transform 1.5s ease-in-out';
-    crab.style.transform='translateX('+(dir*dist)+'px)';
-    setTimeout(function(){
-      crab.style.transform='translateX(0)';
-      setTimeout(function(){
-        crab.style.transition='';
-        setState('idle');
-      },1500);
-    },1500);
+    setTimeout(function(){setState('idle')},2000);
   }
-  setInterval(function(){
-    if(Math.random()<0.4) doWalk();
-  }, 25000 + Math.floor(Math.random()*10000));
-})();
+},30000);
 </script>
