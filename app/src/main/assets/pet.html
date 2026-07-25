@@ -219,7 +219,7 @@ class PetEngine{
   setMood(m){setState(m);autoReturn(5000)}
 
   onAppChanged(pkg){
-    if(appReactions[pkg]){appReactions[pkg]()}
+    if(appReactions[pkg]){appReactions[pkg]()}else{showBubble(pkg,'whisper',5000)}
   }
 
   onScreenshot(){
