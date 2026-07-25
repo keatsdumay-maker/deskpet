@@ -244,6 +244,8 @@ class OverlayService : Service() {
                     params?.x = (params?.x ?: 0) + dx
                     params?.y = (params?.y ?: 0) + dy
                     try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
+                    val dir = if (dx < 0) "left" else "right"
+                    handler.post { overlayView?.evaluateJavascript("setDirection('$dir');setState('walk');autoReturn(2000)", null) }
                 }
                 handler.postDelayed(this, 30000)
             }
@@ -283,6 +285,13 @@ class OverlayService : Service() {
                                 lastTapTime = System.currentTimeMillis()
                                 onTap()
                             }
+                        }
+                    } else {
+                        val totalDx = Math.abs((params?.x ?: 0) - initialX)
+                        val totalDy = Math.abs((params?.y ?: 0) - initialY)
+                        val speed = (totalDx + totalDy).toFloat() / elapsed.coerceAtLeast(1)
+                        if (speed > 2.0f) {
+                            overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
                         }
                     }
                     resetLoneliness()

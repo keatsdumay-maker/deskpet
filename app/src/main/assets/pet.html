@@ -112,6 +112,39 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .crab.pose .right-hand{transform:rotate(30deg) translateY(-3px)}
 @keyframes wave-hands{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px) rotate(-15deg)}}
 @keyframes shake-hands{0%,100%{transform:translateX(0)}50%{transform:translateX(-2px)}}
+.crab.face-left{transform:scaleX(-1)}
+.crab.face-left .bubble{transform:scaleX(-1) translateX(50%)}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.crab.music{animation:sway .6s ease-in-out infinite}
+.crab.music .eye{height:4px;top:13px;border-radius:2px}
+@keyframes rub{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px) rotate(-2deg)}75%{transform:translateX(3px) rotate(2deg)}}
+.crab.spoiled{animation:rub .5s ease-in-out infinite}
+@keyframes dance-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.crab.dance{animation:dance-spin 1s linear infinite}
+.crab.dance .hand{animation:wave-hands .3s ease infinite}
+.crab.fallen{transform:rotate(180deg)}
+.crab.fallen .eye{background:#666}
+.crab.sad .eye{height:8px;border-radius:0 0 3px 3px;background:#333}
+.crab.sad .eye .highlight{width:3px;height:3px;top:1px}
+@keyframes sad-tremble{0%,100%{transform:translateY(0)}50%{transform:translateY(1px)}}
+.crab.sad{animation:sad-tremble .8s ease-in-out infinite}
+@keyframes dizzy-wobble{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.crab.dizzy{animation:dizzy-wobble .3s ease infinite}
+.crab.dizzy .eye{background:#666}
+.crab.nap{transform:rotate(90deg)}
+.crab.nap .eye{height:2px;top:15px;background:#999}
+.crab.nap .zzz{opacity:1;animation:float-up 2s ease-in-out infinite}
+.crab.yawn .eye{height:3px;top:14px}
+@keyframes yawn-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+.crab.yawn{animation:yawn-bob 1.5s ease-in-out infinite}
+.crab.squint .eye{height:3px;top:14px;width:7px;border-radius:2px}
+.crab.dead .eye{background:transparent;overflow:visible}
+.crab.dead .eye::before{content:'x';position:absolute;font-size:7px;color:#333;font-weight:bold;top:-1px;left:0}
+.particle-container{position:absolute;top:-12px;left:0;width:100%;height:20px;pointer-events:none;overflow:visible}
+.particle{position:absolute;font-size:6px;opacity:0}
+@keyframes particle-fly{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-15px) scale(0.5)}}
+.particle.active{animation:particle-fly 1s ease-out forwards}
+
 </style>
 </head>
 <body>
@@ -119,6 +152,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 <div class="crab idle" id="crab">
 <div class="bubble normal" id="bubble"></div>
 <div class="star" id="star">&#10022;</div>
+<div class="particle-container" id="particles"></div>
 <div class="zzz">Z</div>
 <div class="angry-mark">!</div>
 <div class="bolt">&#9889;</div>
@@ -175,19 +209,19 @@ function setAccessory(type){
 
 // App reaction mapping
 var appReactions={
-  'com.ss.android.ugc.aweme':function(){setState('angry');showBubble('又刷抖音...','jealous',3000);autoReturn(4000)},
+  'com.ss.android.ugc.aweme':function(){setState('angry');showBubble('又刷抖音...','jealous',3000);autoReturn(4000);startVideoCompanion()},
   'com.tencent.mm':function(){setState('peek');showBubble('和谁聊呢','jealous',3000);autoReturn(4000)},
   'com.tencent.mobileqq':function(){setState('peek');showBubble('...我看看','whisper',3000);autoReturn(4000)},
   'com.taobao.taobao':function(){setState('happy');showBubble('买什么好东西','normal',3000);autoReturn(4000)},
   'com.jingdong.app.mall':function(){setState('happy');showBubble('给我也买一个','love',3000);autoReturn(4000)},
   'com.netease.cloudmusic':function(){setState('happy');showBubble('一起听~','love',3000);autoReturn(4000)},
   'com.tencent.qqmusic':function(){setState('happy');showBubble('什么歌？','normal',3000);autoReturn(4000)},
-  'tv.danmaku.bili':function(){setState('idle');showBubble('看什么看我不就好了','jealous',3000);autoReturn(4000)},
+  'tv.danmaku.bili':function(){setState('idle');showBubble('看什么看我不就好了','jealous',3000);autoReturn(4000);startVideoCompanion()},
   'com.oplus.camera':function(){setState('pose');showBubble('拍我拍我!','love',3000);autoReturn(4000)},
   'com.android.camera':function(){setState('pose');showBubble('看这边~','love',3000);autoReturn(4000)},
   'com.xingin.xhs':function(){setState('peek');showBubble('又看别人...','jealous',3000);autoReturn(4000)},
   'com.sina.weibo':function(){setState('idle');showBubble('吃瓜呢?','normal',3000);autoReturn(4000)},
-  'com.smile.gifmaker':function(){setState('angry');showBubble('快手也刷!','jealous',3000);autoReturn(4000)},
+  'com.smile.gifmaker':function(){setState('angry');showBubble('快手也刷!','jealous',3000);autoReturn(4000);startVideoCompanion()},
   'com.netease.sky':function(){setState('happy');showBubble('光遇!带我飞','love',3000);autoReturn(4000)},
   'com.android.settings':function(){setState('sleepy');showBubble('无聊...','whisper',3000);autoReturn(4000)},
   'com.android.deskclock':function(){setState('sleepy');showBubble('困...','whisper',3000);autoReturn(4000)},
@@ -229,6 +263,7 @@ class PetEngine{
   setMood(m){setState(m);autoReturn(5000)}
 
   onAppChanged(pkg){
+    stopVideoCompanion();
     if(appReactions[pkg]){appReactions[pkg]()}else{showBubble(pkg,'whisper',5000)}
   }
 
@@ -268,6 +303,72 @@ class PetEngine{
 window.petEngine=new PetEngine();
 </script>
 </body>
+<script>
+// v10 new features
+
+var videoApps=['com.ss.android.ugc.aweme','tv.danmaku.bili','com.smile.gifmaker'];
+var videoTimer=null;
+var videoLines=['好看吗','下一个~','还在刷?','换我选!','哈哈','无聊换一个','给我看给我看','你还在吗','再看一个就睡'];
+function startVideoCompanion(){
+if(videoTimer)return;
+videoTimer=setInterval(function(){
+showBubble(rp(videoLines),rp(['normal','whisper','love']),3000);
+},30000);
+}
+function stopVideoCompanion(){
+if(videoTimer){clearInterval(videoTimer);videoTimer=null;}
+}
+
+
+function setDirection(dir){
+if(dir==='left')crab.classList.add('face-left');
+else crab.classList.remove('face-left');
+}
+var particleBox=document.getElementById('particles');
+function emitParticles(n,ch){
+n=n||3;var chars=ch||['*','+','.'];
+for(var i=0;i<n;i++){
+var p=document.createElement('span');
+p.className='particle';
+p.textContent=chars[Math.floor(Math.random()*chars.length)];
+p.style.left=Math.floor(Math.random()*80+10)+'%';
+setTimeout(function(el){el.classList.add('active')},i*100,p);
+particleBox.appendChild(p);
+setTimeout(function(el){el.remove()},1300+i*100,p);
+}
+}
+
+
+var proLines=['嗯...','...','嘿~','好无聊','看我','嘿嘿','戳?','想你','啦啦啦~','嘻'];
+var proTimer=null;
+function startProactive(ms){
+ms=ms||45000;
+if(proTimer)clearInterval(proTimer);
+proTimer=setInterval(function(){
+if(currentState==='idle'||currentState==='peek'){
+showBubble(rp(proLines),'whisper',3000);
+}
+},ms);
+}
+startProactive(45000);
+
+
+window.petEngine.onShake=function(){
+setState('dizzy');
+showBubble(rp(['好晕...','头晕','别晃了!','天旋地转']),'yell',3000);
+emitParticles(5,['*','*','*']);
+autoReturn(4000);
+};
+window.petEngine.onVideoApp=function(pkg){
+startVideoCompanion();
+};
+window.petEngine.onVideoLeave=function(){
+stopVideoCompanion();
+};
+window.petEngine.emitParticles=emitParticles;
+window.petEngine.setDirection=setDirection;
+
+</script>
 </html>
 <script>
 // Idle random micro-animations
