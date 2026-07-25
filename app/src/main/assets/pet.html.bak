@@ -38,7 +38,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .eye .highlight{position:absolute;width:2px;height:2px;background:#fff;top:2px;right:1px;border-radius:50%}
 .face-slot{position:absolute;top:7px;left:0;width:100%;pointer-events:none;display:flex;justify-content:center}
 .hat-slot{height:8px;display:flex;justify-content:center;align-items:flex-end}
-.legs{display:flex;justify-content:center;gap:1px}
+.legs{display:flex;justify-content:center;gap:2px}
 .leg{width:5px;height:6px;background:#E8A088}
 .shadow{width:32px;height:4px;background:rgba(0,0,0,.12);margin-top:1px}
 .crab.idle .shadow{animation:shadow-breath 2s ease-in-out infinite}
@@ -50,8 +50,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 @keyframes idle-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 @keyframes leg-step{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.7)}}
 .crab.idle{animation:idle-float 2s ease-in-out infinite}
-.crab.idle .legs{animation:idle-float-counter 2s ease-in-out infinite}
-@keyframes idle-float-counter{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
 
 .crab.happy .eye{height:4px;top:13px;border-radius:2px}
 @keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}60%{transform:translateY(-3px)}}
@@ -101,17 +99,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 
 /* Screenshot pose */
 @keyframes pose-flash{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}
-
+.crab.pose .hand{animation:none;transform:rotate(-30deg) translateY(-3px)}
 .crab.pose{animation:none}
-
-/* Hands: tucked by default, animate on active states */
-.hand{transition:transform .2s}
-.crab.happy .hand{animation:wave-hands .4s ease 2}
-.crab.angry .hand{animation:shake-hands .15s ease 4}
-.crab.pose .left-hand{transform:rotate(-30deg) translateY(-3px)}
-.crab.pose .right-hand{transform:rotate(30deg) translateY(-3px)}
-@keyframes wave-hands{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px) rotate(-15deg)}}
-@keyframes shake-hands{0%,100%{transform:translateX(0)}50%{transform:translateX(-2px)}}
 </style>
 </head>
 <body>
