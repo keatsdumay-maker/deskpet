@@ -91,7 +91,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 @keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
 
 /* Charging */
-.crab.charging .body{background:#FFD700}
 .bolt{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:10px;opacity:0}
 .crab.charging .bolt{opacity:1;animation:pulse 1s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -241,3 +240,26 @@ window.petEngine=new PetEngine();
 </script>
 </body>
 </html>
+<script>
+// Idle random micro-animations
+setInterval(function(){
+  if(currentState!=='idle') return;
+  var r=Math.random();
+  if(r<0.15){
+    // blink
+    var eyes=document.querySelectorAll('.eye');
+    eyes.forEach(function(e){e.style.height='2px';e.style.transition='height .1s'});
+    setTimeout(function(){eyes.forEach(function(e){e.style.height='';e.style.transition=''})},150);
+  }else if(r<0.25){
+    // tilt head
+    crab.style.transform='rotate(5deg)';
+    setTimeout(function(){crab.style.transform=''},800);
+  }else if(r<0.30){
+    // small wiggle
+    crab.style.transform='translateX(2px)';
+    setTimeout(function(){crab.style.transform='translateX(-2px)';
+      setTimeout(function(){crab.style.transform=''},200);
+    },200);
+  }
+},4000);
+</script>
