@@ -74,8 +74,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .crab.shy .blush{display:block}
 .crab.shy{transform:scale(.9)}
 
-.crab.peek{transform:translateX(20px) scale(.8)}
+.crab.peek{transform:translateX(35px) scale(.75);animation:peek-bob 2s ease-in-out infinite}
 .crab.peek .eye.left{display:none}
+.crab.peek .left-hand{display:none}
+.crab.peek .leg:nth-child(1),.crab.peek .leg:nth-child(2){display:none}
+@keyframes peek-bob{0%,100%{transform:translateX(35px) scale(.75)}50%{transform:translateX(35px) scale(.75) translateY(-2px)}}
 
 .crab.asleep .eye{height:2px;top:15px;background:#999}
 .crab.asleep{opacity:.7;animation:none}
