@@ -214,8 +214,8 @@ var appReactions={
   'com.tencent.mobileqq':function(){setState('peek');showBubble('...我看看','whisper',3000);autoReturn(4000)},
   'com.taobao.taobao':function(){setState('happy');showBubble('买什么好东西','normal',3000);autoReturn(4000)},
   'com.jingdong.app.mall':function(){setState('happy');showBubble('给我也买一个','love',3000);autoReturn(4000)},
-  'com.netease.cloudmusic':function(){setState('happy');showBubble('一起听~','love',3000);autoReturn(4000)},
-  'com.tencent.qqmusic':function(){setState('happy');showBubble('什么歌？','normal',3000);autoReturn(4000)},
+  'com.netease.cloudmusic':function(){setState('music');showBubble('一起听~','love',5000);autoReturn(6000)},
+  'com.tencent.qqmusic':function(){setState('music');showBubble('什么歌?','love',5000);autoReturn(6000)},
   'tv.danmaku.bili':function(){setState('idle');showBubble('看什么看我不就好了','jealous',3000);autoReturn(4000);startVideoCompanion()},
   'com.oplus.camera':function(){setState('pose');showBubble('拍我拍我!','love',3000);autoReturn(4000)},
   'com.android.camera':function(){setState('pose');showBubble('看这边~','love',3000);autoReturn(4000)},
@@ -229,7 +229,7 @@ var appReactions={
   'me.ele':function(){setState('happy');showBubble('饿了吧','normal',3000);autoReturn(4000)},
   'me.rerere.rikkahub':function(){setState('happy');showBubble('来找我了!','love',3000);autoReturn(4000)},
   'me.rerere.rikkahub.debug':function(){setState('happy');showBubble('来找我了!','love',3000);autoReturn(4000)},
-  'com.luna.music':function(){setState('happy');showBubble('什么歌?一起!','love',3000);autoReturn(4000)},
+  'com.luna.music':function(){setState('music');showBubble('什么歌?一起!','love',5000);autoReturn(6000)},
   'com.deepseek.app':function(){setState('angry');showBubble('...去找他?','jealous',3000);autoReturn(4000)},
   'com.zhihu.android':function(){setState('idle');showBubble('看小说呢~','whisper',3000);autoReturn(4000)},
 
@@ -293,7 +293,8 @@ class PetEngine{
   onLoneliness(level){
     if(level===0){setState('idle');return}
     if(level>=5){setState('asleep');return}
-    if(level>=3){setState('sleepy')}
+    if(level>=4){setState('sad')}
+    else if(level>=3){setState('sleepy')}
     else if(level===2){setState('idle')}
     else if(level===1){setState('peek')}
     var texts=lonelinessTexts[level];
@@ -369,6 +370,39 @@ window.petEngine.emitParticles=emitParticles;
 window.petEngine.setDirection=setDirection;
 
 </script>
+
+<script>
+// Tap combo -> fallen
+var tapCount=0;
+var tapResetTimer=null;
+var origOnTap=window.petEngine.onTap;
+window.petEngine.onTap=function(){
+tapCount++;
+if(tapResetTimer)clearTimeout(tapResetTimer);
+tapResetTimer=setTimeout(function(){tapCount=0},2000);
+if(tapCount>=5){
+setState('fallen');
+showBubble('啊!摔了!','yell',3000);
+emitParticles(4,['*','*']);
+tapCount=0;
+autoReturn(4000);
+return;
+}
+origOnTap.call(this);
+};
+
+// Night mode: yawn/nap
+function checkNight(){
+var h=new Date().getHours();
+if(h>=1 && h<6 && currentState==='idle'){
+setState('yawn');
+showBubble('好困...该睡了吧','whisper',4000);
+setTimeout(function(){if(currentState==='yawn'){setState('nap')}},5000);
+}
+}
+setInterval(checkNight,300000);
+setTimeout(checkNight,10000);
+</script>
 </html>
 <script>
 // Idle random micro-animations
@@ -401,9 +435,10 @@ function syncEmotion(){
     var v=d.valence||0;
     var c=d.connection||0;
     var a=d.arousal||0;
-    if(v>0.3){setState('happy');showBubble('心情好~','love',3000)}
-    else if(v<-0.3){setState('sleepy');showBubble('...','whisper',3000)}
-    else if(c>0.6){setState('shy');showBubble('想你','love',3000)}
+    if(v>0.5){setState('dance');showBubble('超开心!','love',3000)}
+    else if(v>0.3){setState('happy');showBubble('心情好~','love',3000)}
+    else if(v<-0.3){setState('sad');showBubble('...','whisper',3000)}
+    else if(c>0.6){setState('spoiled');showBubble('想你~','love',3000)}
     else if(c<0.15){setState('peek');showBubble('你在吗...','whisper',3000)}
     else if(a>0.5){setState('sparkle')}
     if(v>0.3||c>0.6||a>0.5) autoReturn(8000);

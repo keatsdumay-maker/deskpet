@@ -290,7 +290,7 @@ class OverlayService : Service() {
                         val totalDx = Math.abs((params?.x ?: 0) - initialX)
                         val totalDy = Math.abs((params?.y ?: 0) - initialY)
                         val speed = (totalDx + totalDy).toFloat() / elapsed.coerceAtLeast(1)
-                        if (speed > 2.0f) {
+                        if (speed > 0.8f) {
                             overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
                         }
                     }
