@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.DeskPet" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">#FF6B35</item>
+        <item name="colorPrimaryVariant">#E55A2B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+    </style>
+</resources>
