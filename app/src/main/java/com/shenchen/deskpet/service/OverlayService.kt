@@ -66,6 +66,7 @@ class OverlayService : Service() {
         lastInteractionTime = System.currentTimeMillis()
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
+    }
 
     private fun dpToPx(dp: Int): Int {
         return (dp * resources.displayMetrics.density).toInt()
