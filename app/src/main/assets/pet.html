@@ -1,81 +1,27 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-* { margin: 0; padding: 0; }
-html, body { 
-  background: transparent; 
-  overflow: hidden;
-  width: 100%; 
-  height: 100%;
-}
-canvas { 
-  image-rendering: pixelated; 
-  image-rendering: crisp-edges;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-</style>
-</head>
-<body>
-<canvas id="crab"></canvas>
+<html><head><meta charset="UTF-8">
+<style>*{margin:0;padding:0}html,body{background:transparent;overflow:hidden;width:100%;height:100%}canvas{image-rendering:pixelated;image-rendering:crisp-edges;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}</style>
+</head><body><canvas id="c"></canvas>
 <script>
-const canvas = document.getElementById('crab');
-const ctx = canvas.getContext('2d');
-
-const PX = 4;
-const W = 32;
-const H = 24;
-
-canvas.width = W * PX;
-canvas.height = H * PX;
-
-const BODY = '#E8926A';
-const EYE = '#2D2D2D';
-const SHADOW = 'rgba(0,0,0,0.18)';
-
-function px(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x * PX, y * PX, w * PX, h * PX);
-}
-
-function drawCrab(time) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  const bob = Math.round(Math.sin(time / 500) * 0.8);
-  const legPhase = Math.floor(time / 350) % 2;
-  
-  px(7, 21, 18, 2, SHADOW);
-  
-  const l1 = legPhase === 0 ? 0 : 1;
-  const l2 = legPhase === 0 ? 1 : 0;
-  
-  px(10, 17 + bob + l1, 2, 3 - l1, BODY);
-  px(14, 17 + bob + l2, 2, 3 - l2, BODY);
-  px(18, 17 + bob + l2, 2, 3 - l2, BODY);
-  px(22, 17 + bob + l1, 2, 3 - l1, BODY);
-  
-  px(7, 6 + bob, 18, 12, BODY);
-  
-  px(4, 10 + bob, 3, 2, BODY);
-  px(25, 10 + bob, 3, 2, BODY);
-  
-  px(12, 9 + bob, 2, 4, EYE);
-  px(18, 9 + bob, 2, 4, EYE);
-  
-  px(12, 9 + bob, 1, 1, '#FFFFFF');
-  px(18, 9 + bob, 1, 1, '#FFFFFF');
-}
-
-function animate(time) {
-  drawCrab(time);
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-</script>
-</body>
-</html>
+var canvas=document.getElementById("c"),ctx=canvas.getContext("2d");
+var P=3,W=36,H=28;canvas.width=W*P;canvas.height=H*P;
+var BODY="#E8A88C",EYE="#2D2D2D",SHD="rgba(0,0,0,0.2)";
+var hats=["none","hardhat","headphones","glasses"];
+var hatIdx=0;
+function px(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x*P,y*P,w*P,h*P);}
+function draw(t){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+var bob=Math.round(Math.sin(t/600)*0.7);
+var lp=Math.floor(t/400)%2;
+px(9,24,18,2,SHD);
+var la=lp===0?0:1,lb=lp===0?1:0;
+px(11,21+bob+la,2,2,BODY);px(15,21+bob+lb,2,2,BODY);
+px(19,21+bob+lb,2,2,BODY);px(23,21+bob+la,2,2,BODY);
+px(8,9+bob,20,12,BODY);
+px(5,13+bob,3,2,BODY);px(28,13+bob,3,2,BODY);
+px(14,12+bob,2,4,EYE);px(20,12+bob,2,4,EYE);
+px(14,12+bob,1,1,"#FFF");px(20,12+bob,1,1,"#FFF");
+var h=hats[hatIdx];
+if(h==="hardhat"){px(10,5+bob,16,4,"#E8B84C");px(12,3+bob,12,2,"#E8B84C");px(16,1#DAA520");px(17,2+bob,2,2,"#FFF");}
+if(h==="headphones"){px(7,8+bob,2,6,"#px(27;pb,5,3,"#6,2,1,"#6Bn aniatIdx+1)%hats.length;},onTap:function(){},onLongPress:{}};
+</script></body><>
