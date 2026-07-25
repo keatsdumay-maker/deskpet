@@ -4,206 +4,130 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-*{margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:transparent}
-svg{width:100%;height:100%}
-.bubble{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #333;border-radius:8px;padding:2px 6px;font-size:9px;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none;font-family:sans-serif;z-index:10}
+.container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px}
+.bubble{position:absolute;top:2px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid #333;padding:3px 6px;font-size:10px;font-family:sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;border-radius:2px;z-index:10}
 .bubble.show{opacity:1}
-#container{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.bubble::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid #333}
+.crab{position:relative;display:flex;flex-direction:column;align-items:center}
+.body-row{display:flex;align-items:center}
+.hand{width:6px;height:4px;background:#E8A088}
+.body{width:40px;height:32px;background:#E8A088;position:relative}
+.eye{position:absolute;width:5px;height:10px;background:#111;top:10px}
+.eye.left{left:10px}
+.eye.right{right:10px}
+.legs{display:flex;justify-content:center;gap:4px}
+.leg{width:5px;height:6px;background:#E8A088}
+.shadow{width:32px;height:4px;background:rgba(0,0,0,.12);margin-top:1px;border-radius:1px}
+.accessory{position:absolute;top:-8px;left:50%;transform:translateX(-50%)}
+@keyframes idle-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes leg-step{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.7)}}
+.crab.idle{animation:idle-float 2s ease-in-out infinite}
+.crab.idle .leg:nth-child(odd){animation:leg-step 1s ease-in-out infinite}
+.crab.idle .leg:nth-child(even){animation:leg-step 1s ease-in-out .5s infinite}
+.crab.happy .eye{height:4px;top:13px}
+@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}60%{transform:translateY(-3px)}}
+.crab.happy{animation:bounce .5s ease 2}
+.crab.sleepy .eye{height:2px;top:15px;background:#666}
+.zzz{position:absolute;top:-10px;right:-4px;font-size:8px;opacity:0}
+.crab.sleepy .zzz{opacity:1;animation:float-up 2s ease-in-out infinite}
+@keyframes float-up{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-6px);opacity:0}}
+.crab.angry .body{background:#D4796A}
+.angry-mark{position:absolute;top:-6px;right:0;font-size:8px;opacity:0}
+.crab.angry .angry-mark{opacity:1}
+@keyframes walk-move{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+.crab.walk{animation:walk-move .4s ease-in-out infinite}
+.crab.walk .leg{animation:leg-step .2s ease-in-out infinite}
+.blush{position:absolute;width:6px;height:4px;background:rgba(255,100,100,.5);top:18px;display:none}
+.blush.left{left:4px}
+.blush.right{right:4px}
+.crab.shy .blush{display:block}
+.crab.shy{transform:scale(.9)}
+.crab.shy .hand{display:none}
+.star{position:absolute;top:-8px;font-size:8px;opacity:0}
+.crab.sparkle .star{opacity:1;animation:twinkle 1s ease infinite}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
 </style>
 </head>
 <body>
-<div id="container">
+<div class="container">
 <div class="bubble" id="bubble"></div>
-<svg id="pet" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-<g id="shadow"><ellipse cx="40" cy="72" rx="16" ry="4" fill="rgba(0,0,0,0.1)"/></g>
-<g id="body-group">
-<g id="legs">
-<rect id="leg-l1" x="26" y="58" width="4" height="8" rx="2" fill="#F4A89A"/>
-<rect id="leg-l2" x="33" y="58" width="4" height="8" rx="2" fill="#F4A89A"/>
-<rect id="leg-r1" x="43" y="58" width="4" height="8" rx="2" fill="#F4A89A"/>
-<rect id="leg-r2" x="50" y="58" width="4" height="8" rx="2" fill="#F4A89A"/>
-</g>
-<g id="main-body">
-<rect id="torso" x="20" y="28" width="40" height="32" rx="6" fill="#F4A89A"/>
-<rect id="arm-l" x="14" y="40" width="6" height="4" rx="2" fill="#F4A89A"/>
-<rect id="arm-r" x="60" y="40" width="6" height="4" rx="2" fill="#F4A89A"/>
-</g>
-<g id="face">
-<rect id="eye-l" x="30" y="34" width="5" height="10" rx="2.5" fill="#333"/>
-<rect id="eye-r" x="45" y="34" width="5" height="10" rx="2.5" fill="#333"/>
-<ellipse id="hl-l" cx="31.5" cy="36" rx="1.5" ry="1.5" fill="#fff"/>
-<ellipse id="hl-r" cx="46.5" cy="36" rx="1.5" ry="1.5" fill="#fff"/>
-<path id="mouth" d="" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-<ellipse id="blush-l" cx="27" cy="44" rx="3" ry="2" fill="#FF8A80" opacity="0"/>
-<ellipse id="blush-r" cx="53" cy="44" rx="3" ry="2" fill="#FF8A80" opacity="0"/>
-</g>
-<g id="effects"></g>
-<g id="accessory"></g>
-</g>
-</svg>
+<div class="crab idle" id="crab">
+<div class="star" id="star">✦</div>
+<div class="zzz">Z</div>
+<div class="angry-mark">!</div>
+<div class="accessory" id="accessory"></div>
+<div class="body-row">
+<div class="hand"></div>
+<div class="body">
+<div class="eye left"></div>
+<div class="eye right"></div>
+<div class="blush left"></div>
+<div class="blush right"></div>
+</div>
+<div class="hand"></div>
+</div>
+<div class="legs">
+<div class="leg"></div>
+<div class="leg"></div>
+<div class="leg"></div>
+<div class="leg"></div>
+</div>
+</div>
+<div class="shadow"></div>
 </div>
 <script>
-const $=id=>document.getElementById(id);
-const bubble=$('bubble');
-const bodyGroup=$('body-group');
-const effects=$('effects');
+const crab=document.getElementById('crab');
+const bubble=document.getElementById('bubble');
 let currentState='idle';
 let stateTimer=null;
-let tick=0;
 let accessoryIndex=0;
 const accessories=['none','hardhat','headphones','glasses','bow'];
 
-function animIdle(){
-const phase=tick*0.06;
-const floatY=Math.sin(phase)*2;
-bodyGroup.style.transform=`translateY(${floatY}px)`;
-const legPhase=Math.sin(phase*2);
-$('leg-l1').setAttribute('y',58+legPhase);
-$('leg-r2').setAttribute('y',58+legPhase);
-$('leg-l2').setAttribute('y',58-legPhase);
-$('leg-r1').setAttribute('y',58-legPhase);
+function setState(s){
+crab.className='crab '+s;
+currentState=s;
 }
 
-function animHappy(){
-const phase=tick*0.15;
-const bounce=Math.abs(Math.sin(phase))*-6;
-bodyGroup.style.transform=`translateY(${bounce}px)`;
-$('eye-l').setAttribute('height',4);$('eye-l').setAttribute('y',38);$('eye-l').setAttribute('rx',2.5);
-$('eye-r').setAttribute('height',4);$('eye-r').setAttribute('y',38);$('eye-r').setAttribute('rx',2.5);
-$('hl-l').setAttribute('opacity',0);$('hl-r').setAttribute('opacity',0);
-if(tick%30===0){
-const h=document.createElementNS('http://www.w3.org/2000/svg','text');
-h.setAttribute('x',35+Math.random()*10);h.setAttribute('y',20);h.setAttribute('font-size','10');h.textContent='\u2665';
-h.style.fill='#FF6B6B';effects.appendChild(h);
-let fy=20;const fi=setInterval(()=>{fy-=1;h.setAttribute('y',fy);h.setAttribute('opacity',fy/20);if(fy<5){clearInterval(fi);effects.removeChild(h)}},50);
-}
+function showBubble(t){
+bubble.textContent=t;
+bubble.classList.add('show');
+if(stateTimer)clearTimeout(stateTimer);
+stateTimer=setTimeout(()=>{bubble.classList.remove('show')},2000);
 }
 
-function animPoked(){
-const shake=(tick%4<2)?2:-2;
-bodyGroup.style.transform=`translateX(${shake}px)`;
-}
-
-function animAngry(){
-const shake=(tick%3<1)?1.5:-1.5;
-bodyGroup.style.transform=`translateX(${shake}px)`;
-if(tick===1){
-const ex=document.createElementNS('http://www.w3.org/2000/svg','text');
-ex.setAttribute('x',36);ex.setAttribute('y',22);ex.setAttribute('font-size','12');ex.setAttribute('fill','#333');ex.textContent='!';
-effects.appendChild(ex);setTimeout(()=>{if(effects.contains(ex))effects.removeChild(ex)},1500);
-}
-}
-
-function animSleepy(){
-$('eye-l').setAttribute('height',2);$('eye-l').setAttribute('y',38);
-$('eye-r').setAttribute('height',2);$('eye-r').setAttribute('y',38);
-$('hl-l').setAttribute('opacity',0);$('hl-r').setAttribute('opacity',0);
-const phase=tick*0.04;
-bodyGroup.style.transform=`translateY(${Math.sin(phase)*1}px)`;
-if(tick%40===0){
-const z=document.createElementNS('http://www.w3.org/2000/svg','text');
-z.setAttribute('x',52);z.setAttribute('y',26);z.setAttribute('font-size','8');z.setAttribute('fill','#999');z.textContent='z';
-effects.appendChild(z);let zy=26;const zi=setInterval(()=>{zy-=0.5;z.setAttribute('y',zy);z.setAttribute('opacity',(26-zy)/10>1?0:(1-(26-zy)/10));if(zy<16){clearInterval(zi);if(effects.contains(z))effects.removeChild(z)}},80);
-}
-}
-
-function animWalk(){
-const phase=tick*0.12;
-const sway=Math.sin(phase)*3;
-bodyGroup.style.transform=`translateX(${sway}px)`;
-const legPhase=Math.sin(phase*2)*3;
-$('leg-l1').setAttribute('y',58+legPhase);
-$('leg-r2').setAttribute('y',58+legPhase);
-$('leg-l2').setAttribute('y',58-legPhase);
-$('leg-r1').setAttribute('y',58-legPhase);
-}
-
-function animDrag(){
-const wave=Math.sin(tick*0.2)*4;
-$('arm-l').setAttribute('y',36+wave);
-$('arm-r').setAttribute('y',36-wave);
-$('arm-l').setAttribute('x',10+Math.sin(tick*0.3)*2);
-$('arm-r').setAttribute('x',62+Math.sin(tick*0.3+1)*2);
-}
-
-function animShy(){
-$('blush-l').setAttribute('opacity',0.7);$('blush-r').setAttribute('opacity',0.7);
-const shrink=0.95+Math.sin(tick*0.08)*0.02;
-bodyGroup.style.transform=`scale(${shrink})`;
-$('arm-l').setAttribute('x',22);$('arm-l').setAttribute('y',34);
-$('arm-r').setAttribute('x',52);$('arm-r').setAttribute('y',34);
-}
-
-function animDance(){
-const phase=tick*0.1;
-const rot=Math.sin(phase)*10;
-bodyGroup.style.transform=`rotate(${rot}deg)`;
-bodyGroup.style.transformOrigin='40px 50px';
-$('arm-l').setAttribute('y',36+Math.sin(phase*2)*4);
-$('arm-r').setAttribute('y',36+Math.cos(phase*2)*4);
-}
-
-function animSad(){
-$('eye-l').setAttribute('height',8);$('eye-r').setAttribute('height',8);
-$('hl-l').setAttribute('r',2.5);$('hl-r').setAttribute('r',2.5);
-$('mouth').setAttribute('d','M35 50 Q40 48 45 50');
-const phase=tick*0.05;
-bodyGroup.style.transform=`translateY(${Math.sin(phase)*0.5}px)`;
-}
-
-function resetFace(){
-$('eye-l').setAttribute('x',30);$('eye-l').setAttribute('y',34);$('eye-l').setAttribute('width',5);$('eye-l').setAttribute('height',10);$('eye-l').setAttribute('rx',2.5);
-$('eye-r').setAttribute('x',45);$('eye-r').setAttribute('y',34);$('eye-r').setAttribute('width',5);$('eye-r').setAttribute('height',10);$('eye-r').setAttribute('rx',2.5);
-$('hl-l').setAttribute('opacity',1);$('hl-l').setAttribute('cx',31.5);$('hl-l').setAttribute('cy',36);$('hl-l').setAttribute('rx',1.5);$('hl-l').setAttribute('ry',1.5);
-$('hl-r').setAttribute('opacity',1);$('hl-r').setAttribute('cx',46.5);$('hl-r').setAttribute('cy',36);$('hl-r').setAttribute('rx',1.5);$('hl-r').setAttribute('ry',1.5);
-$('mouth').setAttribute('d','');
-$('blush-l').setAttribute('opacity',0);$('blush-r').setAttribute('opacity',0);
-$('arm-l').setAttribute('x',14);$('arm-l').setAttribute('y',40);
-$('arm-r').setAttribute('x',60);$('arm-r').setAttribute('y',40);
-bodyGroup.style.transform='';bodyGroup.style.transformOrigin='';
-effects.innerHTML='';
-}
-
-function showBubble(t){bubble.textContent=t;bubble.classList.add('show');setTimeout(()=>bubble.classList.remove('show'),2000)}
 function rp(a){return a[Math.floor(Math.random()*a.length)]}
 
-function setAccessory(type){
-const acc=$('accessory');acc.innerHTML='';
-switch(type){
-case'hardhat':acc.innerHTML='<rect x="22" y="14" width="36" height="8" rx="3" fill="#FFD700"/><rect x="35" y="10" width="10" height="6" rx="2" fill="#FFD700"/>';break;
-case'headphones':acc.innerHTML='<path d="M24 28 Q24 18 40 18 Q56 18 56 28" stroke="#333" stroke-width="2.5" fill="none"/><circle cx="24" cy="30" r="4" fill="#333"/><circle cx="56" cy="30" r="4" fill="#333"/>';break;
-case'glasses':acc.innerHTML='<circle cx="32" cy="38" r="6" stroke="#333" stroke-width="1.5" fill="none"/><circle cx="48" cy="38" r="6" stroke="#333" stroke-width="1.5" fill="none"/><line x1="38" y1="38" x2="42" y2="38" stroke="#333" stroke-width="1.5"/>';break;
-case'bow':acc.innerHTML='<polygon points="40,14 34,18 40,16 46,18" fill="#FF69B4"/><circle cx="40" cy="16" r="2" fill="#FF69B4"/>';break;
+function autoReturn(ms){
+setTimeout(()=>{setState('idle')},ms);
 }
+
+function setAccessory(type){
+const acc=document.getElementById('accessory');
+acc.innerHTML='';
+if(type==='hardhat')acc.innerHTML='<div style="width:20px;height:5px;background:#FFD700;margin:0 auto"></div>';
+else if(type==='headphones')acc.innerHTML='<div style="width:30px;height:3px;background:#333;border-radius:8px 8px 0 0;margin:0 auto"></div>';
+else if(type==='glasses')acc.innerHTML='<div style="display:flex;gap:2px;justify-content:center"><div style="width:8px;height:6px;border:1.5px solid #333"></div><div style="width:8px;height:6px;border:1.5px solid #333"></div></div>';
+else if(type==='bow')acc.innerHTML='<div style="width:0;height:0;border-left:5px solid #FF69B4;border-right:5px solid #FF69B4;border-top:3px solid transparent;border-bottom:3px solid transparent;margin:0 auto"></div>';
 }
 
 class PetEngine{
-constructor(){this.tick=0;this.loop()}
-loop(){
-tick++;
-resetFace();
-switch(currentState){
-case'idle':animIdle();break;
-case'happy':animHappy();break;
-case'poked':animPoked();break;
-case'angry':animAngry();break;
-case'sleepy':animSleepy();break;
-case'walk':animWalk();break;
-case'drag':animDrag();break;
-case'shy':animShy();break;
-case'dance':animDance();break;
-case'sad':animSad();break;
+onTap(){
+showBubble(rp(['别戳了！','干嘛！','哎呀','嗯？','戳戳戳']));
+autoReturn(2000);
 }
-requestAnimationFrame(()=>this.loop());
+onDoubleTap(){
+setState('happy');
+showBubble(rp(['嘿嘿♥','开心！','喜欢你~','哇!']));
+autoReturn(3000);
 }
-onTap(){this.setState('poked');showBubble(rp(['别戳了！','干嘛！','哎呀','嗯？']));this.autoReturn(2000)}
-onDoubleTap(){this.setState('happy');showBubble(rp(['嘿嘿\u2665','开心！','喜欢你~','哇!']));this.autoReturn(3000)}
-onLongPress(){accessoryIndex=(accessoryIndex+1)%accessories.length;setAccessory(accessories[accessoryIndex]);showBubble(accessories[accessoryIndex]==='none'?'脱掉了~':'好看吗？')}
-setState(s){if(stateTimer)clearTimeout(stateTimer);resetFace();tick=0;currentState=s}
-autoReturn(ms){stateTimer=setTimeout(()=>{this.setState('idle')},ms)}
-setMood(m){this.setState(m)}
-setMoodTimed(m,ms){this.setState(m);this.autoReturn(ms)}
+onLongPress(){
+accessoryIndex=(accessoryIndex+1)%accessories.length;
+setAccessory(accessories[accessoryIndex]);
+showBubble(accessories[accessoryIndex]==='none'?'脱掉了~':'好看吗？');
+}
+setMood(m){setState(m);autoReturn(5000)}
 }
 window.petEngine=new PetEngine();
 </script>
