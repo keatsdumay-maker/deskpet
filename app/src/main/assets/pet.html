@@ -96,11 +96,11 @@ function showBubble(t){bubble.textContent=t;bubble.classList.add('show');if(stat
 function rp(a){return a[Math.floor(Math.random()*a.length)]}
 function autoReturn(ms){setTimeout(()=>{setState('idle')},ms)}
 function setAccessory(type){
-hatSlot.innerHTML='';faceSlot.innerHTML='';
-if(type==='hardhat')hatSlot.innerHTML='<div style="width:24px;height:6px;background:#FFD700"></div>';
-else if(type==='headphones')hatSlot.innerHTML='<div style="width:32px;height:4px;background:#333;border-radius:6px 6px 0 0"></div>';
-else if(type==='glasses')faceSlot.innerHTML='<div style="display:flex;gap:3px;justify-content:center"><div style="width:9px;height:7px;border:1.5px solid #333"></div><div style="width:9px;height:7px;border:1.5px solid #333"></div></div>';
-else if(type==='bow')hatSlot.innerHTML='<div style="width:0;height:0;border-left:5px solid #FF69B4;border-right:5px solid #FF69B4;border-top:3px solid transparent;border-bottom:3px solid transparent"></div>';
+hatSlot.innerHTML="";faceSlot.innerHTML="";
+if(type==="hardhat"){hatSlot.innerHTML="<div style=\"position:relative\"><div style=\"width:28px;height:4px;background:#E8A020;margin:0 auto\"></div><div style=\"width:18px;height:6px;background:#F5C542;margin:0 auto;margin-top:-1px\"></div></div>";}
+else if(type==="headphones"){hatSlot.innerHTML="<div style=\"position:relative;width:30px;margin:0 auto\"><div style=\"width:24px;height:10px;border:2px solid #555;border-bottom:none;border-radius:10px 10px 0 0;margin:0 auto\"></div><div style=\"position:absolute;bottom:0;left:0;width:6px;height:6px;background:#555;border-radius:50%\"></div><div style=\"position:absolute;bottom:0;right:0;width:6px;height:6px;background:#555;border-radius:50%\"></div></div>";}
+else if(type==="glasses"){faceSlot.innerHTML="<div style=\"display:flex;align-items:center;justify-content:center;gap:1px\"><div style=\"width:10px;height:8px;border:1.5px solid #555;border-radius:2px\"></div><div style=\"width:3px;height:1.5px;background:#555\"></div><div style=\"width:10px;height:8px;border:1.5px solid #555;border-radius:2px\"></div></div>";}
+else if(type==="bow"){hatSlot.innerHTML="<div style=\"display:flex;align-items:center;justify-content:center\"><div style=\"width:7px;height:5px;background:#FF69B4;border-radius:2px 0 0 2px\"></div><div style=\"width:4px;height:4px;background:#FF1493;border-radius:50%\"></div><div style=\"width:7px;height:5px;background:#FF69B4;border-radius:0 2px 2px 0\"></div></div>";}
 }
 class PetEngine{
 onTap(){showBubble(rp(['别戳了！','干嘛！','哎呀','嗯？','戳戳戳']));autoReturn(2000)}
