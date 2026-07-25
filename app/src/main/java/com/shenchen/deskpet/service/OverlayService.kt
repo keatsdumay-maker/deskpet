@@ -239,8 +239,8 @@ class OverlayService : Service() {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 if (Math.random() < 0.3) {
-                    val dx = (-20..20).random()
-                    val dy = (-10..10).random()
+                    val dx = (-45..45).random()
+                    val dy = (-25..25).random()
                     params?.x = (params?.x ?: 0) + dx
                     params?.y = (params?.y ?: 0) + dy
                     try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}

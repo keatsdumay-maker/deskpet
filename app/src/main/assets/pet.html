@@ -268,16 +268,6 @@ setInterval(function(){
 },4000);
 </script>
 <script>
-// Walk in place randomly
-setInterval(function(){
-  if(currentState!=='idle') return;
-  if(Math.random()<0.3){
-    setState('walk');
-    setTimeout(function(){setState('idle')},2000);
-  }
-},30000);
-</script>
-<script>
 // Emotion sync from jiwen
 var emotionUrl='http://8.141.106.232:8001/state';
 function syncEmotion(){
