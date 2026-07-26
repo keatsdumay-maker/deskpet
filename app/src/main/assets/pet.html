@@ -424,6 +424,53 @@ setTimeout(function(){if(currentState==='yawn'){setState('nap')}},5000);
 setInterval(checkNight,300000);
 setTimeout(checkNight,10000);
 </script>
+<script>
+// Water reminder every 45min
+var waterLines=['该喝水了~','喝口水吧','补充水分!','渴不渴?','喝水喝水'];
+setInterval(function(){
+if(currentState==='idle'||currentState==='peek'){
+setState('alert');
+showBubble(rp(waterLines),'normal',4000);
+autoReturn(4000);
+}
+},2700000);
+
+// Time awareness
+function checkTimeOfDay(){
+var h=new Date().getHours();
+if(h>=6 && h<8 && currentState==='idle'){
+setState('wake');
+showBubble(rp(['早安~','起床了!','新的一天~','早上好']),'love',4000);
+autoReturn(5000);
+}else if(h>=12 && h<13 && currentState==='idle'){
+setState('yawn');
+showBubble(rp(['午饭吃了吗','好困...午休吧','中午了~']),'whisper',4000);
+autoReturn(5000);
+}else if(h>=18 && h<19 && currentState==='idle'){
+setState('happy');
+showBubble(rp(['晚上了~','今天辛苦了','晚饭时间!']),'love',3000);
+autoReturn(4000);
+}else if(h>=23 && currentState==='idle'){
+setState('sleepy');
+showBubble(rp(['该睡了...','早点休息','别熬夜了','晚安~']),'whisper',4000);
+autoReturn(5000);
+}
+}
+setInterval(checkTimeOfDay,600000);
+setTimeout(checkTimeOfDay,15000);
+
+// Wake transition: when leaving sleep states, show wake first
+var origSetState=setState;
+setState=function(s){
+var sleepStates=['asleep','nap','sleepy'];
+if(sleepStates.indexOf(currentState)>=0 && sleepStates.indexOf(s)<0 && s!=='wake'){
+origSetState('wake');
+setTimeout(function(){origSetState(s)},1500);
+}else{
+origSetState(s);
+}
+};
+</script>
 </html>
 <script>
 // Idle random micro-animations
