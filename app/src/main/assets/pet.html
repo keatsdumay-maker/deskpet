@@ -254,15 +254,18 @@ var lonelinessTexts=[
 
 class PetEngine{
   onTap(){
+    reportGesture('tap');
     showBubble(rp(['别戳了!','干嘛!','哎呀','嗯?','戳戳戳','轻点!','疼!','又戳','手欠是吧','讨厌','哼']),rp(['normal','yell']),2000);
     autoReturn(2000);
   }
   onDoubleTap(){
+    reportGesture('double_tap');
     setState('happy');
     showBubble(rp(['嘿嘿~','开心!','喜欢你~','哇!','再来一次!']),  'love',3000);
     autoReturn(3000);
   }
   onLongPress(){
+    reportGesture('long_press');
     accessoryIndex=(accessoryIndex+1)%accessories.length;
     setAccessory(accessories[accessoryIndex]);
     showBubble(accessories[accessoryIndex]==='none'?'脱掉了~':'好看吗?','normal',2000);
@@ -271,6 +274,7 @@ class PetEngine{
 
   onAppChanged(pkg){
     stopVideoCompanion();
+    reportApp(pkg);
     if(appReactions[pkg]){appReactions[pkg]()}else{}
   }
 
@@ -511,6 +515,7 @@ autoReturn(8000);
 </script>
 <script>
 window.petEngine.onFlingOut=function(){
+reportGesture('fling');
 setState('fallen');
 showBubble('\u55ef!','yell',2000);
 emitParticles(5,['*','*','+']);
@@ -520,6 +525,11 @@ setState('walk');
 showBubble('\u722c\u56de\u6765\u4e86...','whisper',3000);
 autoReturn(3000);
 };
+</script>
+<script>
+var JIWEN='http://8.141.106.232:8001';
+function reportGesture(t){fetch(JIWEN+'/gesture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:t})}).catch(function(){});}
+function reportApp(pkg){fetch(JIWEN+'/app_usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pkg:pkg})}).catch(function(){});}
 </script>
 </html>
 <script>
