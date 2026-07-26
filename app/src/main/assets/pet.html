@@ -527,7 +527,7 @@ autoReturn(3000);
 };
 </script>
 <script>
-var JIWEN='http://8.141.106.232:8001';
+var JIWEN='http://8.141.106.232:5000/emo';
 function reportGesture(t){fetch(JIWEN+'/gesture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:t})}).catch(function(){});}
 function reportApp(pkg){fetch(JIWEN+'/app_usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pkg:pkg})}).catch(function(){});}
 </script>
@@ -558,7 +558,7 @@ setInterval(function(){
 </script>
 <script>
 // Emotion sync from jiwen
-var emotionUrl='http://8.141.106.232:8001/state';
+var emotionUrl='http://8.141.106.232:5000/emo/state';
 function syncEmotion(){
   fetch(emotionUrl).then(function(r){return r.json()}).then(function(d){
     var v=d.valence||0;
