@@ -185,7 +185,7 @@ let currentState='idle';
 let stateTimer=null;
 let bubbleTimer=null;
 let accessoryIndex=0;
-const accessories=['none','hardhat','headphones','glasses','bow'];
+const accessories=['none','cowboy-hat','halo','party-hat','pumpkin-hat','santa-hat','top-hat','wizard-hat'];
 
 var svgMap={'idle':'clawd-mini-idle','happy':'clawd-react-double-jump','peek':'clawd-mini-peek','sleepy':'clawd-idle-doze','asleep':'clawd-sleeping','nap':'clawd-collapse-sleep','dizzy':'clawd-dizzy','walk':'clawd-mini-crabwalk','music':'clawd-headphones-groove','angry':'clawd-angry-steam','shy':'clawd-aegyo-shy','spoiled':'clawd-spoiled','dance':'clawd-react-double-jump','fallen':'clawd-error','sad':'clawd-sad-tears','pose':'clawd-mini-happy','charging':'clawd-coffee-hand','sparkle':'clawd-mini-happy','yawn':'clawd-idle-yawn','wake':'clawd-wake','drag':'clawd-react-drag','lowbattery':'clawd-idle-low-battery','juggling':'clawd-working-juggling','reading':'clawd-idle-reading','alert':'clawd-mini-alert','notification':'clawd-notification','sweeping':'clawd-working-sweeping','carrying':'clawd-working-carrying','collapse':'clawd-idle-collapse','follow':'clawd-idle-follow','living':'clawd-idle-living','look':'clawd-idle-look','building':'clawd-working-building','debugger':'clawd-working-debugger','thinking':'clawd-working-thinking','typing':'clawd-working-typing','typing-boss':'clawd-working-typing-boss','ultrathink':'clawd-working-ultrathink','wizard':'clawd-working-wizard','coffee-flip':'clawd-coffee-head-flip'};
 function setState(s){currentState=s;var f=svgMap[s]||'clawd-mini-idle';document.getElementById('pet-svg').setAttribute('data','svg/'+f+'.svg');}
@@ -207,11 +207,9 @@ function rp(a){return a[Math.floor(Math.random()*a.length)]}
 function autoReturn(ms){if(stateTimer)clearTimeout(stateTimer);stateTimer=setTimeout(function(){setState('idle')},ms)}
 
 function setAccessory(type){
-  var acc2=document.getElementById('accessory2');acc2.innerHTML='';acc2.style.bottom='78%';
-  if(type==="hardhat"){acc2.innerHTML="<div style='display:flex;flex-direction:column;align-items:center'><div style='display:flex'><div style='width:4px;height:4px;background:#F5C542'></div><div style='width:4px;height:4px;background:#F5C542'></div><div style='width:4px;height:4px;background:#F5C542'></div><div style='width:4px;height:4px;background:#F5C542'></div><div style='width:4px;height:4px;background:#F5C542'></div></div><div style='display:flex'><div style='width:4px;height:4px;background:#E8A020'></div><div style='width:4px;height:4px;background:#E8A020'></div><div style='width:4px;height:4px;background:#E8A020'></div><div style='width:4px;height:4px;background:#E8A020'></div><div style='width:4px;height:4px;background:#E8A020'></div><div style='width:4px;height:4px;background:#E8A020'></div><div style='width:4px;height:4px;background:#E8A020'></div></div></div>";}
-  else if(type==="headphones"){acc2.innerHTML="<div style='position:relative;width:28px;height:14px;margin:0 auto'><div style='position:absolute;top:0;left:4px;width:20px;height:4px;background:#333'></div><div style='position:absolute;top:4px;left:2px;width:4px;height:4px;background:#333'></div><div style='position:absolute;top:4px;right:2px;width:4px;height:4px;background:#333'></div><div style='position:absolute;top:8px;left:0;width:6px;height:6px;background:#333'></div><div style='position:absolute;top:8px;right:0;width:6px;height:6px;background:#333'></div></div>";}
-  else if(type==="glasses"){acc2.style.bottom='68%';acc2.innerHTML="<div style='display:flex;align-items:center;justify-content:center'><div style='width:8px;height:6px;border:2px solid #333'></div><div style='width:4px;height:2px;background:#333'></div><div style='width:8px;height:6px;border:2px solid #333'></div></div>";}
-  else if(type==="bow"){acc2.innerHTML="<div style='display:flex;align-items:center;justify-content:center'><div style='width:6px;height:4px;background:#FF69B4'></div><div style='width:4px;height:4px;background:#FF1493'></div><div style='width:6px;height:4px;background:#FF69B4'></div></div>";}
+  var acc2=document.getElementById('accessory2');
+  if(type==='none'||!type){acc2.innerHTML='';return;}
+  acc2.innerHTML='<img src="svg/acc-'+type+'.svg" style="width:28px;height:auto;image-rendering:pixelated;display:block">';
 }
 
 // App reaction mapping
