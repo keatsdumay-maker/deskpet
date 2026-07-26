@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500">
+  <defs>
+    <style>
+      .body-sad {
+        transform-origin: 7.5px 12px;
+        animation: sad-tremble 0.8s ease-in-out infinite;
+      }
+      .tear-l { animation: tear-drop 2s 0.3s ease-in infinite; opacity: 0; }
+      .tear-r { animation: tear-drop 2s 0.8s ease-in infinite; opacity: 0; }
+      .mouth-sad { opacity: 1; }
+      .eyes-sad {
+        transform-origin: 7.5px 9px;
+      }
+
+      @keyframes sad-tremble {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(1px); }
+      }
+
+      @keyframes tear-drop {
+        0%   { opacity: 0; transform: translateY(0); }
+        10%  { opacity: 1; transform: translateY(0); }
+        80%  { opacity: 0.8; transform: translateY(6px); }
+        100% { opacity: 0; transform: translateY(8px); }
+      }
+    </style>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <rect x="3" y="15" width="9" height="1" fill="#000" opacity="0.5"/>
+
+  <!-- Static Legs -->
+  <g fill="#DE886D">
+    <rect x="3" y="11" width="1" height="4"/>
+    <rect x="5" y="11" width="1" height="4"/>
+    <rect x="9" y="11" width="1" height="4"/>
+    <rect x="11" y="11" width="1" height="4"/>
+  </g>
+
+  <!-- Animated Upper Body -->
+  <g class="body-sad">
+    <!-- Torso -->
+    <g fill="#DE886D">
+      <rect x="2" y="6" width="11" height="7"/>
+    </g>
+    <!-- Arms (drooping) -->
+    <g fill="#DE886D">
+      <rect x="0" y="10" width="2" height="2"/>
+      <rect x="13" y="10" width="2" height="2"/>
+    </g>
+    <!-- Big watery eyes -->
+    <g class="eyes-sad" fill="#111">
+      <rect x="4" y="7" width="2" height="3"/>
+      <rect x="9" y="7" width="2" height="3"/>
+      <!-- Highlights (big, watery look) -->
+      <rect x="4" y="7" width="1" height="1" fill="#FFF"/>
+      <rect x="9" y="7" width="1" height="1" fill="#FFF"/>
+      <!-- Extra shine for watery effect -->
+      <rect x="5" y="9" width="1" height="1" fill="rgba(255,255,255,0.5)"/>
+      <rect x="10" y="9" width="1" height="1" fill="rgba(255,255,255,0.5)"/>
+    </g>
+    <!-- Sad mouth (downward curve) -->
+    <g class="mouth-sad" fill="#333">
+      <rect x="6" y="11" width="3" height="1"/>
+      <rect x="5" y="11" width="1" height="1" fill="transparent"/>
+      <rect x="6" y="12" width="1" height="1" opacity="0.5"/>
+      <rect x="8" y="12" width="1" height="1" opacity="0.5"/>
+    </g>
+    <!-- Tears -->
+    <g class="tear-l" fill="#7BC8F6">
+      <rect x="5" y="10" width="1" height="2"/>
+    </g>
+    <g class="tear-r" fill="#7BC8F6">
+      <rect x="10" y="10" width="1" height="2"/>
+    </g>
+  </g>
+</svg>

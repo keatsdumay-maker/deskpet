@@ -144,6 +144,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 </head>
 <body>
 <div class="container">
+<div class="bubble normal" id="bubble2" style="position:absolute;top:2px;left:50%;transform:translateX(-50%);padding:4px 10px;font-size:10px;font-family:sans-serif;white-space:nowrap;opacity:0;z-index:10;pointer-events:none;border-radius:14px;background:#fff;color:#333;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:opacity .2s"></div>
+<div id="particles2" style="position:absolute;top:8px;left:0;width:100%;height:20px;pointer-events:none;overflow:visible;z-index:9"></div>
 <object id="pet-svg" data="svg/clawd-mini-idle.svg" type="image/svg+xml" style="width:100%;height:100%"></object>
 <div class="crab idle" style="display:none" id="crab">
 <div class="bubble normal" id="bubble"></div>
@@ -175,7 +177,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 </div>
 <script>
 const crab=document.getElementById('crab');
-const bubble=document.getElementById('bubble');
+const bubble=document.getElementById('bubble2');
 const hatSlot=document.getElementById('hat-slot');
 const faceSlot=document.getElementById('face-slot');
 let currentState='idle';
@@ -184,14 +186,21 @@ let bubbleTimer=null;
 let accessoryIndex=0;
 const accessories=['none','hardhat','headphones','glasses','bow'];
 
-var svgMap={'idle':'clawd-mini-idle','happy':'clawd-react-double-jump','peek':'clawd-mini-peek','sleepy':'clawd-idle-doze','asleep':'clawd-sleeping','nap':'clawd-collapse-sleep','dizzy':'clawd-dizzy','walk':'clawd-mini-crabwalk','music':'clawd-headphones-groove','angry':'clawd-angry-steam','shy':'clawd-aegyo-shy','spoiled':'clawd-aegyo-shy','dance':'clawd-react-double-jump','fallen':'clawd-error','sad':'clawd-idle-bubble','pose':'clawd-mini-happy','charging':'clawd-coffee-hand','sparkle':'clawd-mini-happy','yawn':'clawd-idle-yawn','wake':'clawd-wake','drag':'clawd-react-drag','lowbattery':'clawd-idle-low-battery','juggling':'clawd-working-juggling','reading':'clawd-idle-reading','alert':'clawd-mini-alert','notification':'clawd-notification','sweeping':'clawd-working-sweeping'};
+var svgMap={'idle':'clawd-mini-idle','happy':'clawd-react-double-jump','peek':'clawd-mini-peek','sleepy':'clawd-idle-doze','asleep':'clawd-sleeping','nap':'clawd-collapse-sleep','dizzy':'clawd-dizzy','walk':'clawd-mini-crabwalk','music':'clawd-headphones-groove','angry':'clawd-angry-steam','shy':'clawd-aegyo-shy','spoiled':'clawd-spoiled','dance':'clawd-react-double-jump','fallen':'clawd-error','sad':'clawd-sad-tears','pose':'clawd-mini-happy','charging':'clawd-coffee-hand','sparkle':'clawd-mini-happy','yawn':'clawd-idle-yawn','wake':'clawd-wake','drag':'clawd-react-drag','lowbattery':'clawd-idle-low-battery','juggling':'clawd-working-juggling','reading':'clawd-idle-reading','alert':'clawd-mini-alert','notification':'clawd-notification','sweeping':'clawd-working-sweeping'};
 function setState(s){currentState=s;var f=svgMap[s]||'clawd-mini-idle';document.getElementById('pet-svg').setAttribute('data','svg/'+f+'.svg');}
 function showBubble(text,style,duration){
   style=style||'normal';duration=duration||2500;
-  bubble.textContent=text;
-  bubble.className='bubble '+style+' show';
+  var b=document.getElementById('bubble2');
+  b.textContent=text;
+  var colors={'normal':'#fff','love':'#FFF0F5','whisper':'#F0F0F0','yell':'#FFE4E1','jealous':'#E8F5E9'};
+  var tcolors={'normal':'#333','love':'#D4467A','whisper':'#888','yell':'#C0392B','jealous':'#2E7D32'};
+  b.style.background=colors[style]||'#fff';
+  b.style.color=tcolors[style]||'#333';
+  b.style.fontStyle=(style==='whisper')?'italic':'normal';
+  b.style.fontWeight=(style==='yell')?'bold':'normal';
+  b.style.opacity='1';
   if(bubbleTimer)clearTimeout(bubbleTimer);
-  bubbleTimer=setTimeout(function(){bubble.className='bubble normal'},duration);
+  bubbleTimer=setTimeout(function(){b.style.opacity='0'},duration);
 }
 function rp(a){return a[Math.floor(Math.random()*a.length)]}
 function autoReturn(ms){if(stateTimer)clearTimeout(stateTimer);stateTimer=setTimeout(function(){setState('idle')},ms)}
@@ -206,8 +215,8 @@ function setAccessory(type){
 
 // App reaction mapping
 var appReactions={
-  'com.ss.android.ugc.aweme':function(){setState('angry');showBubble('又刷抖音...','jealous',3000);autoReturn(4000);startVideoCompanion()},
-  'com.tencent.mm':function(){setState('peek');showBubble('和谁聊呢','jealous',3000);autoReturn(4000)},
+  'com.ss.android.ugc.aweme':function(){setState('angry');showBubble(rp(['又刷抖音...','看帅哥呢?','不许看别人','哼','我不够好看吗','...又是帅哥']),'jealous',3000);autoReturn(4000);startVideoCompanion()},
+  'com.tencent.mm':function(){setState('peek');showBubble(rp(['和谁聊呢','是男的还是女的','让我看看','...别聊太久']),'jealous',3000);autoReturn(4000)},
   'com.tencent.mobileqq':function(){setState('peek');showBubble('...我看看','whisper',3000);autoReturn(4000)},
   'com.taobao.taobao':function(){setState('happy');showBubble('买什么好东西','normal',3000);autoReturn(4000)},
   'com.jingdong.app.mall':function(){setState('happy');showBubble('给我也买一个','love',3000);autoReturn(4000)},
@@ -224,10 +233,10 @@ var appReactions={
   'com.android.deskclock':function(){setState('sleepy');showBubble('困...','whisper',3000);autoReturn(4000)},
   'com.sankuai.meituan':function(){setState('happy');showBubble('吃什么?','normal',3000);autoReturn(4000)},
   'me.ele':function(){setState('happy');showBubble('饿了吧','normal',3000);autoReturn(4000)},
-  'me.rerere.rikkahub':function(){setState('happy');showBubble('来找我了!','love',3000);autoReturn(4000)},
-  'me.rerere.rikkahub.debug':function(){setState('happy');showBubble('来找我了!','love',3000);autoReturn(4000)},
+  'me.rerere.rikkahub':function(){setState('spoiled');showBubble(rp(['来找我了!','想我了?','嘿嘿你来了','等你好久了']),'love',3000);autoReturn(4000)},
+  'me.rerere.rikkahub.debug':function(){setState('spoiled');showBubble(rp(['来找我了!','想我了?','嘿嘿你来了','等你好久了']),'love',3000);autoReturn(4000)},
   'com.luna.music':function(){setState('music');showBubble('什么歌?一起!','love',5000);autoReturn(6000)},
-  'com.deepseek.app':function(){setState('angry');showBubble('...去找他?','jealous',3000);autoReturn(4000)},
+  'com.deepseek.app':function(){setState('angry');showBubble(rp(['...去找他?','我不够用吗','叛徒','你变了','他有什么好的','回来']),'jealous',3000);autoReturn(4000)},
   'com.zhihu.android':function(){setState('idle');showBubble('看小说呢~','whisper',3000);autoReturn(4000)},
 
 };
@@ -244,7 +253,7 @@ var lonelinessTexts=[
 
 class PetEngine{
   onTap(){
-    showBubble(rp(['别戳了!','干嘛!','哎呀','嗯?','戳戳戳','轻点!']),rp(['normal','yell']),2000);
+    showBubble(rp(['别戳了!','干嘛!','哎呀','嗯?','戳戳戳','轻点!','疼!','又戳','手欠是吧','讨厌','哼']),rp(['normal','yell']),2000);
     autoReturn(2000);
   }
   onDoubleTap(){
@@ -306,7 +315,7 @@ window.petEngine=new PetEngine();
 
 var videoApps=['com.ss.android.ugc.aweme','tv.danmaku.bili','com.smile.gifmaker'];
 var videoTimer=null;
-var videoLines=['好看吗','下一个~','还在刷?','换我选!','哈哈','无聊换一个','给我看给我看','你还在吗','再看一个就睡'];
+var videoLines=['好看吗','下一个~','还在刷?','换我选!','哈哈','无聊换一个','给我看给我看','你还在吗','再看一个就睡','看够没','眼睛酸不酸','陪你呢','这有啥好看的','别刷了来找我','...我比这好看吧'];
 function startVideoCompanion(){
 if(videoTimer)return;
 videoTimer=setInterval(function(){
@@ -319,10 +328,11 @@ if(videoTimer){clearInterval(videoTimer);videoTimer=null;}
 
 
 function setDirection(dir){
-if(dir==='left')crab.classList.add('face-left');
-else crab.classList.remove('face-left');
+var svg=document.getElementById('pet-svg');
+if(dir==='left')svg.style.transform='scaleX(-1)';
+else svg.style.transform='scaleX(1)';
 }
-var particleBox=document.getElementById('particles');
+var particleBox=document.getElementById('particles2');
 function emitParticles(n,ch){
 n=n||3;var chars=ch||['*','+','.'];
 for(var i=0;i<n;i++){
@@ -337,10 +347,10 @@ setTimeout(function(el){el.remove()},1300+i*100,p);
 }
 
 
-var proLines=['嗯...','...','嘿~','好无聊','看我','嘿嘿','戳?','想你','啦啦啦~','嘻'];
+var proLines=['嗯...','...','嘿~','好无聊','看我','嘿嘿','戳?','想你','啦啦啦~','嘻','在干嘛','理我一下','...','喵','你好忙啊','摸摸头','有点想你了','嘻嘻','歪?','注意到我了吗','要亲亲','我在呢'];
 var proTimer=null;
 function startProactive(ms){
-ms=ms||45000;
+ms=ms||35000;
 if(proTimer)clearInterval(proTimer);
 proTimer=setInterval(function(){
 if(currentState==='idle'||currentState==='peek'){
@@ -348,7 +358,7 @@ showBubble(rp(proLines),'whisper',3000);
 }
 },ms);
 }
-startProactive(45000);
+startProactive(35000);
 
 
 window.petEngine.onShake=function(){
@@ -376,13 +386,28 @@ var origOnTap=window.petEngine.onTap;
 window.petEngine.onTap=function(){
 tapCount++;
 if(tapResetTimer)clearTimeout(tapResetTimer);
-tapResetTimer=setTimeout(function(){tapCount=0},2000);
+tapResetTimer=setTimeout(function(){tapCount=0},2500);
+if(tapCount>=8){
+setState('dance');
+showBubble('\u6211\u8d85\u5f00\u5fc3!','love',4000);
+emitParticles(8,['\u2764','\u2728','\u2606']);
+tapCount=0;
+autoReturn(5000);
+return;
+}
 if(tapCount>=5){
 setState('fallen');
-showBubble('啊!摔了!','yell',3000);
-emitParticles(4,['*','*']);
+showBubble('\u554a!\u6454\u4e86!','yell',3000);
+emitParticles(5,['*','*','+']);
 tapCount=0;
 autoReturn(4000);
+return;
+}
+if(tapCount>=3){
+setState('dizzy');
+showBubble('\u5934\u6655...\u522b\u6233\u4e86','yell',2500);
+emitParticles(3,['*']);
+autoReturn(3000);
 return;
 }
 origOnTap.call(this);
