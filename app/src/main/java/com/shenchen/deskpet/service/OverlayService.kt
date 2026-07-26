@@ -252,6 +252,30 @@ class OverlayService : Service() {
         }, 30000)
     }
 
+    private fun onFling(dx: Int, dy: Int) {
+        val dm = resources.displayMetrics
+        val curX = params?.x ?: 0
+        val curY = params?.y ?: 0
+        val targetX = if (dx > 0) dm.widthPixels + 200 else -dpToPx(PET_SIZE_DP) - 200
+        val targetY = (curY + dy * 2).coerceIn(0, dm.heightPixels)
+        val anim = android.animation.ValueAnimator.ofFloat(0f, 1f)
+        handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingOut&&window.petEngine.onFlingOut()", null) }
+        anim.duration = 300
+        anim.addUpdateListener { va ->
+            val f = va.animatedFraction
+            params?.x = curX + ((targetX - curX) * f).toInt()
+            params?.y = curY + ((targetY - curY) * f).toInt()
+            try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
+        }
+        anim.start()
+        handler.postDelayed({
+            params?.x = (100..dm.widthPixels/2).random()
+            params?.y = (200..dm.heightPixels/2).random()
+            try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
+            handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingBack&&window.petEngine.onFlingBack()", null) }
+        }, 1800)
+    }
+
     private fun createTouchListener(): View.OnTouchListener {
         return View.OnTouchListener { _, event ->
             when (event.action) {
@@ -287,10 +311,10 @@ class OverlayService : Service() {
                             }
                         }
                     } else {
-                        val totalDx = Math.abs((params?.x ?: 0) - initialX)
-                        val totalDy = Math.abs((params?.y ?: 0) - initialY)
-                        val speed = (totalDx + totalDy).toFloat() / elapsed.coerceAtLeast(1)
-                        if (speed > 1.8f) {
+                        val dx = (params?.x ?: 0) - initialX
+                        val dy = (params?.y ?: 0) - initialY
+                        val speed = (Math.abs(dx) + Math.abs(dy)).toFloat() / elapsed.coerceAtLeast(1)
+                        if (speed > 2.5f) { onFling(dx, dy) } else if (speed > 1.5f) {
                             overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
                         }
                     }

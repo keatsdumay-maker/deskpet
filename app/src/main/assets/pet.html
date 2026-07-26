@@ -502,6 +502,18 @@ showBubble(timedBubbles[i],'whisper',3000);
 autoReturn(8000);
 },1200000);
 </script>
+<script>
+window.petEngine.onFlingOut=function(){
+setState('fallen');
+showBubble('\u55ef!','yell',2000);
+emitParticles(5,['*','*','+']);
+};
+window.petEngine.onFlingBack=function(){
+setState('walk');
+showBubble('\u722c\u56de\u6765\u4e86...','whisper',3000);
+autoReturn(3000);
+};
+</script>
 </html>
 <script>
 // Idle random micro-animations
