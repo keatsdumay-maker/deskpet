@@ -144,7 +144,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 </head>
 <body>
 <div class="container">
-<div id="bubble2" style="position:absolute;bottom:60%;left:50%;transform:translateX(-50%);padding:2px 6px;font-size:10px;font-family:sans-serif;white-space:nowrap;opacity:0;z-index:10;pointer-events:none;border-radius:3px;background:rgba(255,255,255,0.9);color:#333;transition:opacity .2s"></div>
+<div id="bubble2" style="position:absolute;bottom:60%;left:50%;transform:translateX(-50%);padding:3px 7px;font-size:11px;font-family:sans-serif;white-space:nowrap;opacity:0;z-index:10;pointer-events:none;border-radius:3px;background:rgba(255,255,255,0.9);color:#333;transition:opacity .2s"></div>
 <div id="accessory2" style="position:absolute;bottom:62%;top:auto;left:50%;transform:translateX(-50%);z-index:8;pointer-events:none;image-rendering:pixelated"></div>
 <div id="particles2" style="position:absolute;top:8px;left:0;width:100%;height:20px;pointer-events:none;overflow:visible;z-index:9"></div>
 <object id="pet-svg" data="svg/clawd-mini-idle.svg" type="image/svg+xml" style="width:100%;height:100%"></object>
@@ -194,7 +194,7 @@ function showBubble(text,style,duration){
   var b=document.getElementById('bubble2');
   b.textContent=text;
   
-  var tcolors={'normal':'#fff','love':'#FFB6C1','whisper':'#ccc','yell':'#FF6B6B','jealous':'#90EE90'};
+  var tcolors={'normal':'#333','love':'#D4467A','whisper':'#666','yell':'#C0392B','jealous':'#2E7D32'};
   
   b.style.background="#fff";b.style.color=tcolors[style]||'#333';
   
