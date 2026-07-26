@@ -531,6 +531,17 @@ var JIWEN='http://8.141.106.232:8001';
 function reportGesture(t){fetch(JIWEN+'/gesture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:t})}).catch(function(){});}
 function reportApp(pkg){fetch(JIWEN+'/app_usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pkg:pkg})}).catch(function(){});}
 </script>
+<script>
+function pollCommand(){
+fetch(JIWEN+'/pet_command').then(function(r){return r.json()}).then(function(cmd){
+if(cmd.state)setState(cmd.state);
+if(cmd.bubble)showBubble(cmd.bubble,cmd.style||'love',cmd.duration||4000);
+if(cmd.particles)emitParticles(cmd.particles,['*','+']);
+}).catch(function(){});
+}
+setInterval(pollCommand,20000);
+setTimeout(pollCommand,8000);
+</script>
 </html>
 <script>
 // Idle random micro-animations

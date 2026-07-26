@@ -136,6 +136,7 @@ class OverlayService : Service() {
             addAction(Intent.ACTION_BATTERY_LOW)
         }
         registerReceiver(batteryReceiver, filter)
+        NotificationListener.onTrigger = { word, level -> onTriggerWord(word, level) }
     }
 
     // === REACTIONS ===
@@ -150,6 +151,15 @@ class OverlayService : Service() {
         val js = "window.petEngine && window.petEngine.onScreenshot()"
         handler.post { overlayView?.evaluateJavascript(js, null) }
         resetLoneliness()
+    }
+
+    private fun onTriggerWord(word: String, level: Int) {
+        val js = when(level) {
+            1 -> "setState('angry');showBubble('...');emitParticles(5,['*'])"
+            2 -> "setState('spoiled');showBubble('!','love',3000)"
+            else -> "setState('happy');showBubble('~','love',2000)"
+        }
+        handler.post { overlayView?.evaluateJavascript(js, null) }
     }
 
     private fun onCharging(connected: Boolean) {
