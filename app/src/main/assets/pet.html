@@ -6,22 +6,16 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:transparent}
-.container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px}
+.container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px;overflow:visible}
 
 /* Bubble styles */
-.bubble{position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:4px 10px;font-size:10px;font-family:-apple-system,sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;z-index:10;pointer-events:none}
+.bubble{position:absolute;top:-24px;left:50%;transform:translateX(-50%);padding:4px 10px;font-size:10px;font-family:-apple-system,sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;z-index:10;pointer-events:none}
 .bubble.show{opacity:1}
 .bubble.normal{background:#fff;color:#333;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .bubble.love{background:#FFF0F5;color:#D4467A;border-radius:14px;box-shadow:0 1px 4px rgba(212,70,122,.15)}
 .bubble.whisper{background:#F0F0F0;color:#888;border-radius:14px;font-style:italic}
 .bubble.yell{background:#FFE4E1;color:#C0392B;border-radius:14px;font-weight:bold;box-shadow:0 1px 4px rgba(192,57,43,.2)}
 .bubble.jealous{background:#E8F5E9;color:#2E7D32;border-radius:14px;box-shadow:0 1px 4px rgba(46,125,50,.15)}
-.bubble::after{content:'';position:absolute;bottom:-4px;left:50%;margin-left:-3px;width:6px;height:6px;transform:rotate(45deg)}
-.bubble.normal::after{background:#fff}
-.bubble.love::after{background:#FFF0F5}
-.bubble.whisper::after{background:#F0F0F0}
-.bubble.yell::after{background:#FFE4E1}
-.bubble.jealous::after{background:#E8F5E9}
 
 /* Crab */
 .crab{position:relative;display:flex;flex-direction:column;align-items:center}
@@ -38,10 +32,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .eye .highlight{position:absolute;width:2px;height:2px;background:#fff;top:2px;right:1px;border-radius:50%}
 .face-slot{position:absolute;top:7px;left:0;width:100%;pointer-events:none;display:flex;justify-content:center}
 .hat-slot{height:8px;display:flex;justify-content:center;align-items:flex-end}
-.legs{display:flex;justify-content:center;gap:1px}
+.legs{display:flex;justify-content:center;gap:3px}
 .leg{width:5px;height:6px;background:#E8A088}
-.shadow{width:32px;height:4px;background:rgba(0,0,0,.12);margin-top:1px}
-.crab.idle .shadow{animation:shadow-breath 2s ease-in-out infinite}
+.leg:nth-child(2){margin-right:8px}
+.shadow{width:36px;height:5px;background:#888;margin-top:0;border-radius:0}
+
 @keyframes shadow-breath{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.75);opacity:.6}}
 .crab.walk .shadow{animation:shadow-walk .4s ease-in-out infinite}
 @keyframes shadow-walk{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
@@ -53,9 +48,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 .crab.idle .legs{animation:idle-float-counter 2s ease-in-out infinite}
 @keyframes idle-float-counter{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
 
-.crab.happy .eye{height:4px;top:13px;border-radius:2px}
+
 @keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}60%{transform:translateY(-3px)}}
-.crab.happy{animation:bounce .5s ease 2}
+.crab.happy{animation:bounce .3s ease 1}
 
 .crab.sleepy .eye{height:2px;top:15px;background:#666}
 .zzz{position:absolute;top:-10px;right:-4px;font-size:8px;opacity:0}
@@ -264,7 +259,7 @@ class PetEngine{
 
   onAppChanged(pkg){
     stopVideoCompanion();
-    if(appReactions[pkg]){appReactions[pkg]()}else{showBubble(pkg,'whisper',5000)}
+    if(appReactions[pkg]){appReactions[pkg]()}else{}
   }
 
   onScreenshot(){
@@ -414,16 +409,6 @@ setInterval(function(){
     var eyes=document.querySelectorAll('.eye');
     eyes.forEach(function(e){e.style.height='2px';e.style.transition='height .1s'});
     setTimeout(function(){eyes.forEach(function(e){e.style.height='';e.style.transition=''})},150);
-  }else if(r<0.25){
-    // tilt head
-    crab.style.transform='rotate(5deg)';
-    setTimeout(function(){crab.style.transform=''},800);
-  }else if(r<0.30){
-    // small wiggle
-    crab.style.transform='translateX(2px)';
-    setTimeout(function(){crab.style.transform='translateX(-2px)';
-      setTimeout(function(){crab.style.transform=''},200);
-    },200);
   }
 },4000);
 </script>
