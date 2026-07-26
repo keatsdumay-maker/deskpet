@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 16" width="300" height="320">
 <defs><style>
-#master-group{animation:breathe 3s infinite ease-in-out;transform-origin:50% 80%}
-@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(0.3px)}}
+#master-group{animation:breathe 4s infinite ease-in-out;transform-origin:50% 80%}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(0.5px)}}
+#eyes-color-group rect{height:0.5 !important}
 </style></defs>
 
   <rect id="ground-shadow" x="3" y="15" width="9" height="1" fill="#000000" opacity="0.5"/>
