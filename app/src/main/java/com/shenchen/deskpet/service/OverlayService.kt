@@ -157,6 +157,7 @@ class OverlayService : Service() {
         val js = when(level) {
             1 -> "setState('angry');showBubble('...');emitParticles(5,['*'])"
             2 -> "setState('spoiled');showBubble('!','love',3000)"
+            4 -> "setState('angry');showBubble('\u8c01\u554a','jealous',4000);emitParticles(3,['*'])"
             else -> "setState('happy');showBubble('~','love',2000)"
         }
         handler.post { overlayView?.evaluateJavascript(js, null) }

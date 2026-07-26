@@ -21,7 +21,8 @@ class NotificationListener : NotificationListenerService() {
         val content = title + text
         if (sbn?.packageName == "com.shenchen.deskpet") return
         for (w in T1) { if (content.contains(w)) { onTrigger?.invoke(w, 1); return } }
-        for (w in T2) { if (content.contains(w)) { onTrigger?.invoke(w, 2); return } }
+        val isRikka = sbn?.packageName?.contains("rikkahub") == true
+        for (w in T2) { if (content.contains(w)) { onTrigger?.invoke(w, if (isRikka) 2 else 4); return } }
         for (w in T3) { if (content.contains(w)) { onTrigger?.invoke(w, 3); return } }
     }
 }
