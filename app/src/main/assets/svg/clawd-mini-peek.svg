@@ -45,7 +45,7 @@
   </defs>
 
   <!-- Entire character leaning -->
-  <g transform="rotate(-12, 7.5, 15)">
+  <g transform="rotate(0, 7.5, 15)">
 
     <!-- Legs -->
     <g fill="#DE886D">

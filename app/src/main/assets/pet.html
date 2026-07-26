@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:70%;height:70%;overflow:hidden;background:transparent}
-.container{position:relative;width:70%;height:70%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px;overflow:visible}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent}
+.container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px;overflow:visible}
 
 /* Bubble styles */
 .bubble{position:absolute;top:-24px;left:50%;transform:translateX(-50%);padding:4px 10px;font-size:10px;font-family:-apple-system,sans-serif;white-space:nowrap;opacity:0;transition:opacity .2s;z-index:10;pointer-events:none}
@@ -144,7 +144,7 @@ html,body{width:70%;height:70%;overflow:hidden;background:transparent}
 </head>
 <body>
 <div class="container">
-<object id="pet-svg" data="svg/clawd-idle.svg" type="image/svg+xml" style="width:70%;height:70%"></object>
+<object id="pet-svg" data="svg/clawd-mini-idle.svg" type="image/svg+xml" style="width:100%;height:100%"></object>
 <div class="crab idle" style="display:none" id="crab">
 <div class="bubble normal" id="bubble"></div>
 <div class="star" id="star">&#10022;</div>
@@ -184,8 +184,8 @@ let bubbleTimer=null;
 let accessoryIndex=0;
 const accessories=['none','hardhat','headphones','glasses','bow'];
 
-var svgMap={'idle':'clawd-idle','happy':'clawd-happy','peek':'clawd-idle','sleepy':'clawd-sleep','asleep':'clawd-sleep','nap':'clawd-sleep','dizzy':'clawd-dizzy','walk':'clawd-walk','music':'clawd-happy','angry':'clawd-idle','shy':'clawd-idle','spoiled':'clawd-happy','dance':'clawd-happy','fallen':'clawd-dizzy','sad':'clawd-idle','pose':'clawd-happy','charging':'clawd-idle','sparkle':'clawd-happy','yawn':'clawd-sleep'};
-function setState(s){currentState=s;var f=svgMap[s]||'clawd-idle';document.getElementById('pet-svg').setAttribute('data','svg/'+f+'.svg');}
+var svgMap={'idle':'clawd-mini-idle','happy':'clawd-mini-happy','peek':'clawd-mini-peek','sleepy':'clawd-mini-sleep','asleep':'clawd-mini-sleep','nap':'clawd-mini-sleep','dizzy':'clawd-dizzy','walk':'clawd-mini-crabwalk','music':'clawd-mini-happy','angry':'clawd-mini-idle','shy':'clawd-mini-idle','spoiled':'clawd-mini-happy','dance':'clawd-mini-happy','fallen':'clawd-dizzy','sad':'clawd-mini-peek','pose':'clawd-mini-happy','charging':'clawd-mini-idle','sparkle':'clawd-mini-happy','yawn':'clawd-mini-sleep'};
+function setState(s){currentState=s;var f=svgMap[s]||'clawd-mini-idle';document.getElementById('pet-svg').setAttribute('data','svg/'+f+'.svg');}
 function showBubble(text,style,duration){
   style=style||'normal';duration=duration||2500;
   bubble.textContent=text;

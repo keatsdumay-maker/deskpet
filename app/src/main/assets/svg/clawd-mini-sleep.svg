@@ -83,7 +83,7 @@
   <use href="#pixel-z-small" class="z-particle z2" fill="#B0BEC5"/>
   <use href="#pixel-z" class="z-particle z3" fill="#CFD8DC"/>
 
-  <g transform="rotate(-12, 7.5, 15)">
+  <g transform="rotate(0, 7.5, 15)">
     <g fill="#DE886D">
       <rect x="3" y="11" width="1" height="4"/>
       <rect x="5" y="11" width="1" height="4"/>

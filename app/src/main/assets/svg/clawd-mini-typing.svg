@@ -93,7 +93,7 @@
 
   <!-- Entire character leaning: rotate -12° around feet base (7.5, 15) -->
   <!-- Negative = counterclockwise = head tilts left toward screen = peeking pose -->
-  <g transform="rotate(-12, 7.5, 15)">
+  <g transform="rotate(0, 7.5, 15)">
 
     <!-- Legs (inside rotation group so they tilt with the body) -->
     <g fill="#DE886D">
