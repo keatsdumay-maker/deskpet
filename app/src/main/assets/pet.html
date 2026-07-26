@@ -144,7 +144,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 </head>
 <body>
 <div class="container">
-<div class="crab idle" id="crab">
+<object id="pet-svg" data="svg/clawd-mini-idle.svg" type="image/svg+xml" style="width:90px;height:90px"></object>
+<div class="crab idle" style="display:none" id="crab">
 <div class="bubble normal" id="bubble"></div>
 <div class="star" id="star">&#10022;</div>
 <div class="particle-container" id="particles"></div>
@@ -183,7 +184,8 @@ let bubbleTimer=null;
 let accessoryIndex=0;
 const accessories=['none','hardhat','headphones','glasses','bow'];
 
-function setState(s){crab.className='crab '+s;currentState=s}
+var svgMap={'idle':'clawd-mini-idle','happy':'clawd-mini-happy','peek':'clawd-mini-peek','sleepy':'clawd-mini-sleep','asleep':'clawd-mini-sleep','nap':'clawd-mini-sleep','dizzy':'clawd-dizzy','walk':'clawd-mini-crabwalk','music':'clawd-mini-happy','angry':'clawd-mini-idle','shy':'clawd-mini-idle','spoiled':'clawd-mini-happy','dance':'clawd-mini-happy','fallen':'clawd-dizzy','sad':'clawd-mini-peek','pose':'clawd-mini-happy','charging':'clawd-mini-idle','sparkle':'clawd-mini-happy','yawn':'clawd-mini-sleep'};
+function setState(s){currentState=s;var f=svgMap[s]||'clawd-mini-idle';document.getElementById('pet-svg').setAttribute('data','svg/'+f+'.svg');}
 function showBubble(text,style,duration){
   style=style||'normal';duration=duration||2500;
   bubble.textContent=text;
