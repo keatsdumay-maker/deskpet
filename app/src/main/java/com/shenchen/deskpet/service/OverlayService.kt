@@ -305,6 +305,7 @@ class OverlayService : Service() {
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
                     if (abs(dx) > 10 || abs(dy) > 10) {
+                        if (!hasMoved) handler.post { overlayView?.evaluateJavascript("setState('drag')", null) }
                         hasMoved = true
                         params?.x = initialX + dx
                         params?.y = initialY + dy
@@ -329,7 +330,7 @@ class OverlayService : Service() {
                         val speed = (Math.abs(dx) + Math.abs(dy)).toFloat() / elapsed.coerceAtLeast(1)
                         if (speed > 2.5f) { onFling(dx, dy) } else if (speed > 1.5f) {
                             overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
-                        }
+                        } else { handler.post { overlayView?.evaluateJavascript("setState('idle')", null) } }
                     }
                     resetLoneliness()
                     true
