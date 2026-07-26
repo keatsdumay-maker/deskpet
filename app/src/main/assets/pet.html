@@ -348,14 +348,18 @@ setTimeout(function(el){el.remove()},1300+i*100,p);
 }
 
 
-var proLines=['嗯...','...','嘿~','好无聊','看我','嘿嘿','戳?','想你','啦啦啦~','嘻','在干嘛','理我一下','...','喵','你好忙啊','摸摸头','有点想你了','嘻嘻','歪?','注意到我了吗','要亲亲','我在呢'];
+var proPoolDay=['嗯...','嘿~','好无聊','看我','戳?','啦啦啦~','在干嘛','你好忙啊','歪?','嘻'];
+var proPoolClingy=['想你','理我一下','有点想你了','摸摸头','注意到我了吗','要亲亲','我在呢','别忽略我','抱抱','你是不是忘了我'];
+var proPoolChaos=['喵','嘿嘿','嘻嘻','...','汪','呱','摸鱼中','发呆','想搞事','无聊到变形'];
+var proPoolNight=['困了...','还不睡?','晚安','做个好梦','月亮好圆','夜深了','闭眼','安安'];
+function getProLine(){var h=new Date().getHours();if(h>=1&&h<6)return rp(proPoolNight);if(h>=22)return rp(proPoolNight);if(Math.random()<0.3)return rp(proPoolClingy);if(Math.random()<0.2)return rp(proPoolChaos);return rp(proPoolDay);}
 var proTimer=null;
 function startProactive(ms){
 ms=ms||35000;
 if(proTimer)clearInterval(proTimer);
 proTimer=setInterval(function(){
 if(currentState==='idle'||currentState==='peek'){
-showBubble(rp(proLines),'whisper',3000);
+showBubble(getProLine(),'whisper',3000);
 }
 },ms);
 }
@@ -427,11 +431,13 @@ setTimeout(checkNight,10000);
 </script>
 <script>
 // Water reminder every 45min
-var waterLines=['该喝水了~','喝口水吧','补充水分!','渴不渴?','喝水喝水'];
+var waterLevel=0;
+var waterLines=[['该喝水了~','喝口水吧','补充水分!','渴不渴?'],['认真的 喝水','你是不是没听到','喝!水!'],['再不喝水我生气了','......你故意的吧','我要炸了 喝水!']];
+function getWaterLine(){var l=waterLines[Math.min(waterLevel,2)];waterLevel++;return rp(l);}
 setInterval(function(){
 if(currentState==='idle'||currentState==='peek'){
 setState('alert');
-showBubble(rp(waterLines),'normal',4000);
+showBubble(getWaterLine(),'normal',4000);
 autoReturn(4000);
 }
 },2700000);
@@ -479,7 +485,8 @@ window.petEngine.onAppChanged=function(pkg){
 var now=Date.now();
 appSwitchLog.push(now);
 appSwitchLog=appSwitchLog.filter(function(t){return now-t<60000});
-if(appSwitchLog.length>=4){
+if(appSwitchLog.length>=4 && !window._appSwitchCooldown){
+window._appSwitchCooldown=true;setTimeout(function(){window._appSwitchCooldown=false},15000);
 setState('juggling');
 showBubble('\u5207\u592a\u5feb\u4e86!','yell',3000);
 emitParticles(4,['*','+']);
