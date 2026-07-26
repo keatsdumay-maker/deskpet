@@ -7,6 +7,7 @@ class NotificationListener : NotificationListenerService() {
 
     companion object {
         var onTrigger: ((String, Int) -> Unit)? = null
+        var onAnyNotification: ((String, String) -> Unit)? = null
     }
 
     private val T1 = listOf("分手","讨厌你","走开","滚","不要你了","再见")
@@ -20,6 +21,7 @@ class NotificationListener : NotificationListenerService() {
         val text = extras.getCharSequence("android.text")?.toString() ?: ""
         val content = title + text
         if (sbn?.packageName == "com.shenchen.deskpet") return
+        onAnyNotification?.invoke(sbn?.packageName ?: "", title)
         val isRikka = sbn?.packageName?.contains("rikkahub") == true
         for (w in T1) { if (content.contains(w)) { onTrigger?.invoke(w, if (isRikka) 5 else 7); return } }
         for (w in T2) { if (content.contains(w)) { onTrigger?.invoke(w, if (isRikka) 2 else 4); return } }

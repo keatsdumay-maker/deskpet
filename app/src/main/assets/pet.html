@@ -301,6 +301,14 @@ class PetEngine{
     autoReturn(5000);
   }
 
+  onNotification(pkg,title){
+    setState('notification');
+    var lines=['!','有消息','叮~','看看','谁找你'];
+    showBubble(rp(lines),'normal',2000);
+    autoReturn(2500);
+  }
+
+
   onLoneliness(level){
     if(level===0){setState('idle');return}
     if(level>=5){setState('asleep');return}
@@ -450,7 +458,7 @@ autoReturn(4000);
 function checkTimeOfDay(){
 var h=new Date().getHours();
 if(h>=6 && h<8 && currentState==='idle'){
-setState('wake');
+if(Math.random()<0.4){setState('coffee-flip')}else{setState('wake')};
 showBubble(rp(['早安~','起床了!','新的一天~','早上好']),'love',4000);
 autoReturn(5000);
 }else if(h>=12 && h<13 && currentState==='idle'){
@@ -489,6 +497,15 @@ window.petEngine.onAppChanged=function(pkg){
 var now=Date.now();
 appSwitchLog.push(now);
 appSwitchLog=appSwitchLog.filter(function(t){return now-t<60000});
+if(appSwitchLog.length>=6 && !window._appSwitchCooldown){
+window._appSwitchCooldown=true;setTimeout(function(){window._appSwitchCooldown=false},15000);
+setState('typing-boss');
+showBubble('\u4f60\u624b\u901f\u597d\u5feb!','yell',3000);
+emitParticles(5,['*','+','!']);
+appSwitchLog=[];
+autoReturn(4000);
+return;
+}
 if(appSwitchLog.length>=4 && !window._appSwitchCooldown){
 window._appSwitchCooldown=true;setTimeout(function(){window._appSwitchCooldown=false},15000);
 setState('juggling');
@@ -502,8 +519,8 @@ origOnApp.call(this,pkg);
 };
 </script>
 <script>
-var timedActs=['reading','sweeping','juggling','pose','walk','music'];
-var timedBubbles=['\u770b\u4e66\u4e2d~','\u6253\u626b\u536b\u751f','\u7ec3\u6742\u8006','\u81ea\u62cd','\u8d70\u8d70','\u542c\u6b4c\u4e2d~'];
+var timedActs=['reading','sweeping','juggling','pose','walk','music','thinking','building','look','typing','carrying','wizard','living','coffee-flip'];
+var timedBubbles=['看书中~','打扫卫生','练杂耆','自拍','走走','听歌中~','在想事情...','搞建设中','看看四周','啲啲嗒嗒','搬搬搬','见证奇迹!','自己玩~','喃一口'];
 setInterval(function(){
 if(currentState!=='idle')return;
 if(Math.random()>0.3)return;
@@ -548,11 +565,20 @@ setTimeout(pollCommand,8000);
 setInterval(function(){
   if(currentState!=='idle') return;
   var r=Math.random();
-  if(r<0.15){
+  if(r<0.08){
     // blink
     var eyes=document.querySelectorAll('.eye');
     eyes.forEach(function(e){e.style.height='2px';e.style.transition='height .1s'});
     setTimeout(function(){eyes.forEach(function(e){e.style.height='';e.style.transition=''})},150);
+  } else if(r<0.12){
+    setState('look');autoReturn(4000);
+  } else if(r<0.15){
+    setState('follow');autoReturn(3000);
+  } else if(r<0.17){
+    setState('living');autoReturn(5000);
+  } else if(r<0.19){
+    var h=new Date().getHours();
+    if(h>=23||h<6){setState('collapse');showBubble('累了...','whisper',3000);autoReturn(6000);}
   }
 },4000);
 </script>
@@ -569,7 +595,7 @@ function syncEmotion(){
     else if(v<-0.3){setState('sad');showBubble('...','whisper',3000)}
     else if(c>0.6){setState('spoiled');showBubble('想你~','love',3000)}
     else if(c<0.15){setState('peek');showBubble('你在吗...','whisper',3000)}
-    else if(a>0.5){setState('sparkle')}
+    else if(a>0.5){setState('ultrathink');showBubble('\u8111\u5b50\u8981\u70b8\u4e86','yell',3000)}
     if(v>0.3||c>0.6||a>0.5) autoReturn(8000);
   }).catch(function(){});
 }

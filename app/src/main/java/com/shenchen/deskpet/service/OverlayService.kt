@@ -137,6 +137,7 @@ class OverlayService : Service() {
         }
         registerReceiver(batteryReceiver, filter)
         NotificationListener.onTrigger = { word, level -> onTriggerWord(word, level) }
+        NotificationListener.onAnyNotification = { pkg, title -> onAnyNotification(pkg, title) }
     }
 
     // === REACTIONS ===
@@ -164,6 +165,16 @@ class OverlayService : Service() {
         }
         handler.post { overlayView?.evaluateJavascript(js, null) }
     }
+
+    private var lastNotifTime = 0L
+    private fun onAnyNotification(pkg: String, title: String) {
+        val now = System.currentTimeMillis()
+        if (now - lastNotifTime < 30000) return
+        lastNotifTime = now
+        val js = "window.petEngine && window.petEngine.onNotification && window.petEngine.onNotification('" + pkg.replace("'","") + "','" + title.replace("'","").take(20) + "')"
+        handler.post { overlayView?.evaluateJavascript(js, null) }
+    }
+
 
     private fun onCharging(connected: Boolean) {
         val js = "window.petEngine && window.petEngine.onCharging($connected)"
