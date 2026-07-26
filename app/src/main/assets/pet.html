@@ -144,7 +144,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 </head>
 <body>
 <div class="container">
-<div class="bubble normal" id="bubble2" style="position:absolute;bottom:63%;left:50%;transform:translateX(-50%);padding:1px 3px;font-size:7px;font-family:sans-serif;white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis;opacity:0;z-index:10;pointer-events:none;border-radius:4px;background:#fff;color:#333;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:opacity .2s"></div>
+<div id="bubble2" style="position:absolute;bottom:60%;left:50%;transform:translateX(-50%);font-size:9px;font-family:sans-serif;white-space:nowrap;opacity:0;z-index:10;pointer-events:none;color:#fff;text-shadow:-1px 0 #333,0 1px #333,1px 0 #333,0 -1px #333;transition:opacity .2s;font-weight:bold"></div>
 <div id="accessory2" style="position:absolute;bottom:62%;top:auto;left:50%;transform:translateX(-50%);z-index:8;pointer-events:none;image-rendering:pixelated"></div>
 <div id="particles2" style="position:absolute;top:8px;left:0;width:100%;height:20px;pointer-events:none;overflow:visible;z-index:9"></div>
 <object id="pet-svg" data="svg/clawd-mini-idle.svg" type="image/svg+xml" style="width:100%;height:100%"></object>
@@ -193,12 +193,12 @@ function showBubble(text,style,duration){
   style=style||'normal';duration=duration||2500;
   var b=document.getElementById('bubble2');
   b.textContent=text;
-  var colors={'normal':'#fff','love':'#FFF0F5','whisper':'#F0F0F0','yell':'#FFE4E1','jealous':'#E8F5E9'};
-  var tcolors={'normal':'#333','love':'#D4467A','whisper':'#888','yell':'#C0392B','jealous':'#2E7D32'};
-  b.style.background=colors[style]||'#fff';
+  
+  var tcolors={'normal':'#fff','love':'#FFB6C1','whisper':'#ccc','yell':'#FF6B6B','jealous':'#90EE90'};
+  
   b.style.color=tcolors[style]||'#333';
-  b.style.fontStyle=(style==='whisper')?'italic':'normal';
-  b.style.fontWeight=(style==='yell')?'bold':'normal';
+  
+  
   b.style.opacity='1';
   if(bubbleTimer)clearTimeout(bubbleTimer);
   bubbleTimer=setTimeout(function(){b.style.opacity='0'},duration);
