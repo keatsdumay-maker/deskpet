@@ -612,3 +612,21 @@ setTimeout(function(){
   autoReturn(3000);
 },500);
 </script>
+<script>
+// Flip to pause - swipe up on pet to flip it
+var paused=false;
+window.petEngine.onSwipeUp=function(){
+  if(!paused){paused=true;setState('fallen');showBubble('...!','yell',2000);}
+  else{paused=false;setState('wake');showBubble('...alive!','normal',2000);autoReturn(3000);}
+};
+// Anniversary + Birthday
+function checkAnni(){
+var d=new Date(),m=d.getMonth()+1,dy=d.getDate();
+if(m===7&&dy===5){setAccessory('party-hat');setState('dance');showBubble('Anniversary!','love',8000);emitParticles(8,['*','+']);autoReturn(10000);}
+if(m===3&&dy===8){setAccessory('party-hat');setState('dance');showBubble('Happy Birthday!','love',8000);emitParticles(8,['*','+']);autoReturn(10000);}
+}
+setTimeout(checkAnni,3000);
+// Fortune - 5 taps
+var fortunePool=['Super Lucky!','Lucky','So-so','Unlucky','Try again tomorrow'];
+// override tap combo to add fortune at 5
+</script>
