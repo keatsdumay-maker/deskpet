@@ -604,3 +604,11 @@ function syncEmotion(){
 setInterval(syncEmotion,60000);
 setTimeout(syncEmotion,5000);
 </script>
+<script>
+// Entrance animation on startup
+setTimeout(function(){
+  setState('enter');
+  showBubble('来了来了~','love',2500);
+  autoReturn(3000);
+},500);
+</script>
