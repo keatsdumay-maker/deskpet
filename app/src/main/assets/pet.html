@@ -525,7 +525,6 @@ var timedActs=['reading','sweeping','juggling','pose','walk','music','thinking',
 var timedBubbles=['看书中~','打扫卫生','练杂耆','自拍','走走','听歌中~','在想事情...','搞建设中','看看四周','啲啲嗒嗒','搬搬搬','见证奇迹!','自己玩~','喃一口'];
 setInterval(function(){
 if(currentState!=='idle')return;
-if(Math.random()>0.3)return;
 var i=Math.floor(Math.random()*timedActs.length);
 setState(timedActs[i]);
 showBubble(timedBubbles[i],'whisper',3000);
