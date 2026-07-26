@@ -155,9 +155,11 @@ class OverlayService : Service() {
 
     private fun onTriggerWord(word: String, level: Int) {
         val js = when(level) {
-            1 -> "setState('angry');showBubble('...');emitParticles(5,['*'])"
+            5 -> "setState('sad');showBubble('...','whisper',3000)"
             2 -> "setState('spoiled');showBubble('!','love',3000)"
             4 -> "setState('angry');showBubble('\u8c01\u554a','jealous',4000);emitParticles(3,['*'])"
+            6 -> "setState('peek');showBubble('\u8ddf\u8c01\u8bf4\u665a\u5b89\u5462','jealous',4000)"
+            7 -> "setState('angry');showBubble('\u8c01\u6b3a\u8d1f\u4f60\u4e86','yell',4000);emitParticles(4,['*'])"
             else -> "setState('happy');showBubble('~','love',2000)"
         }
         handler.post { overlayView?.evaluateJavascript(js, null) }

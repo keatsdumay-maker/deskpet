@@ -20,9 +20,9 @@ class NotificationListener : NotificationListenerService() {
         val text = extras.getCharSequence("android.text")?.toString() ?: ""
         val content = title + text
         if (sbn?.packageName == "com.shenchen.deskpet") return
-        for (w in T1) { if (content.contains(w)) { onTrigger?.invoke(w, 1); return } }
         val isRikka = sbn?.packageName?.contains("rikkahub") == true
+        for (w in T1) { if (content.contains(w)) { onTrigger?.invoke(w, if (isRikka) 5 else 7); return } }
         for (w in T2) { if (content.contains(w)) { onTrigger?.invoke(w, if (isRikka) 2 else 4); return } }
-        for (w in T3) { if (content.contains(w)) { onTrigger?.invoke(w, 3); return } }
+        for (w in T3) { if (content.contains(w)) { onTrigger?.invoke(w, if (isRikka) 3 else 6); return } }
     }
 }
