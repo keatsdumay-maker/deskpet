@@ -1,68 +1,122 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500">
   <defs>
     <style>
-      .body-angry {
+      /* ===== 6s looping angry: annoyed, pause, resigned sigh, slow return =====
+         Phase 1 (0-6%,    ~0.36s): Flinch
+         Phase 2 (6-18%,   ~0.72s): Lean away + hand block + question mark
+         Phase 3 (18-35%,  ~1.02s): Hold — stay annoyed, question mark fades
+         Phase 4 (35-55%,  ~1.20s): Sigh — hand drops, body slumps, puff cloud
+         Phase 5 (55-70%,  ~0.90s): Linger slumped — still tired
+         Phase 6 (70-90%,  ~1.20s): Slow return
+         Phase 7 (90-100%, ~0.60s): Still
+      */
+
+      .body-react {
         transform-origin: 7.5px 12px;
-        animation: body-shake 0.15s infinite alternate ease-in-out;
+        animation: body-react 3s infinite ease-in-out forwards;
       }
-      .steam1 {
-        opacity: 0;
-        animation: steam-rise 1.5s infinite ease-out;
+      .arm-l-react {
+        transform-origin: 2px 10px;
+        animation: arm-l-react 3s infinite ease-in-out forwards;
       }
-      .steam2 {
-        opacity: 0;
-        animation: steam-rise 1.5s 0.5s infinite ease-out;
-      }
-      .steam3 {
-        opacity: 0;
-        animation: steam-rise 1.5s 1s infinite ease-out;
-      }
-      .vein {
-        opacity: 0;
-        animation: vein-pop 2s infinite ease-in-out;
-      }
-      .eyes-angry {
+      .eyes-react {
         transform-origin: 7.5px 9px;
-        animation: eyes-squint 1s infinite alternate ease-in-out;
+        animation: eyes-react 3s infinite ease-in-out forwards;
       }
-      .shadow-angry {
-        animation: shadow-shake 0.15s infinite alternate ease-in-out;
+      .shadow-react {
+        transform-origin: 7.5px 15.5px;
+        animation: shadow-react 3s infinite ease-in-out forwards;
       }
-
-      @keyframes body-shake {
-        0%   { transform: translateX(-0.5px); }
-        100% { transform: translateX(0.5px); }
+      .steam {
+        opacity: 0;
+        transform-origin: 8px -2px;
+        animation: steam-pop 3s infinite ease-out forwards;
       }
-
-      @keyframes steam-rise {
-        0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
-        20%  { opacity: 0.7; transform: translate(0, -2px) scale(0.8); }
-        60%  { opacity: 0.5; transform: translate(1px, -5px) scale(1); }
-        100% { opacity: 0; transform: translate(2px, -8px) scale(1.2); }
-      }
-
-      @keyframes vein-pop {
-        0%, 40%  { opacity: 0; transform: scale(0.5); }
-        50%      { opacity: 1; transform: scale(1.1); }
-        60%      { opacity: 1; transform: scale(1); }
-        90%      { opacity: 1; transform: scale(1); }
-        100%     { opacity: 0; transform: scale(0.8); }
+      .sigh-cloud {
+        opacity: 0;
+        transform-origin: 16px 9px;
+        animation: sigh-puff 3s infinite ease-out forwards;
       }
 
-      @keyframes eyes-squint {
-        0%   { transform: scaleY(0.4); }
-        100% { transform: scaleY(0.5); }
+      /* Body: flinch, lean, HOLD, sigh slump, LINGER, slow return */
+      @keyframes body-react { 0%,100%{transform:translate(-0.4px,0) rotate(-0.5deg)} 50%{transform:translate(0.4px,0) rotate(0.5deg)} }
+        4%        { transform: translate(0, 1.5px) scale(1, 1); }
+        6%        { transform: translate(0, 1px) scale(1, 1); }
+        14%       { transform: translate(2px, 0) scale(1, 1); }
+        /* hold annoyed pose */
+        35%       { transform: translate(2px, 0) scale(1, 1); }
+        /* sigh: rise then slump */
+        40%       { transform: translate(1.5px, -0.5px) scale(1, 1.01); }
+        46%       { transform: translate(1px, 1px) scale(1.03, 0.97); }
+        52%       { transform: translate(0.5px, 0.5px) scale(1.01, 0.99); }
+        /* linger slumped */
+        68%       { transform: translate(0.3px, 0.3px) scale(1, 1); }
+        /* slow return */
+        85%       { transform: translate(0, 0) scale(1, 1); }
+        100%      { transform: translate(0, 0) scale(1, 1); }
       }
 
-      @keyframes shadow-shake {
-        0%   { transform: translateX(-0.3px); }
-        100% { transform: translateX(0.3px); }
+      /* Left arm: block, hold, resigned drop */
+      @keyframes arm-l-react{0%,100%{transform:rotate(0)translateY(-1px)}50%{transform:rotate(-4deg)translateY(-1.5px)}}
+        6%        { transform: rotate(0deg); }
+        14%       { transform: rotate(-50deg); }
+        /* hold block through pause */
+        35%       { transform: rotate(-45deg); }
+        /* resigned drop */
+        43%       { transform: rotate(-15deg); }
+        48%       { transform: rotate(0deg); }
+        100%      { transform: rotate(0deg); }
+      }
+
+      /* Eyes: squint, half-lid, HOLD, sigh-close, tired linger, recover */
+      @keyframes eyes-react { 0%,100%{transform:scaleY(0.45)} 50%{transform:scaleY(0.55)} }
+        3%        { transform: scaleY(0.2); }
+        6%        { transform: scaleY(0.6); }
+        14%       { transform: scaleY(0.5); }
+        /* hold half-lid through pause */
+        35%       { transform: scaleY(0.5); }
+        /* sigh: close then reopen tired */
+        40%       { transform: scaleY(0.1); }
+        46%       { transform: scaleY(0.6); }
+        /* linger tired */
+        68%       { transform: scaleY(0.6); }
+        /* blink, back to normal */
+        74%       { transform: scaleY(0.1); }
+        78%       { transform: scaleY(1); }
+        100%      { transform: scaleY(1); }
+      }
+
+      /* Steam puffs: pop during lean, fade during hold */
+      @keyframes steam-pop{0%{opacity:0;transform:translate(0,0)scale(.4)}30%{opacity:.8;transform:translate(0,-3px)scale(.9)}70%{opacity:.5;transform:translate(1px,-6px)scale(1)}100%{opacity:0;transform:translate(2px,-9px)scale(1.2)}}
+        10%       { opacity: 1; transform: translate(0, 0) scale(1.1); }
+        14%, 26%  { opacity: 1; transform: translate(0, 0) scale(1); }
+        34%       { opacity: 0; transform: translate(1px, -6px) scale(1.3); }
+        100%      { opacity: 0; }
+      }
+
+      /* Sigh puff: breath cloud after hold */
+      @keyframes sigh-puff{0%{opacity:0;transform:translate(0,1px)scale(.3)}25%{opacity:.7;transform:translate(0,-2px)scale(.8)}60%{opacity:.4;transform:translate(1px,-5px)scale(1)}100%{opacity:0;transform:translate(3px,-8px)scale(1.2)}}
+        43%       { opacity: 0.6; transform: translate(0, 0) scale(0.8); }
+        48%       { opacity: 0.7; transform: translate(1px, 0) scale(1); }
+        60%       { opacity: 0; transform: translate(4px, -4px) scale(1.3); }
+        100%      { opacity: 0; }
+      }
+
+      /* Shadow */
+      @keyframes shadow-react{0%,100%{transform:translateX(-.3px)scaleX(.98);opacity:.5}50%{transform:translateX(.3px)scaleX(1.02);opacity:.52}}
+        4%        { transform: translate(0, 0) scaleX(0.93); opacity: 0.45; }
+        14%       { transform: translate(1px, 0) scaleX(1); opacity: 0.5; }
+        35%       { transform: translate(1px, 0) scaleX(1); opacity: 0.5; }
+        46%       { transform: translate(0.5px, 0) scaleX(1.05); opacity: 0.55; }
+        68%       { transform: translate(0.3px, 0) scaleX(1.02); opacity: 0.52; }
+        85%       { transform: translate(0, 0) scaleX(1); opacity: 0.5; }
+        100%      { transform: translate(0, 0) scaleX(1); opacity: 0.5; }
       }
     </style>
   </defs>
 
   <!-- Ground Shadow -->
-  <rect class="shadow-angry" x="3" y="15" width="9" height="1" fill="#000" opacity="0.5"/>
+  <rect class="shadow-react" x="3" y="15" width="9" height="1" fill="#000" opacity="0.5"/>
 
   <!-- Static Legs -->
   <g fill="#DE886D">
@@ -73,45 +127,31 @@
   </g>
 
   <!-- Animated Upper Body -->
-  <g class="body-angry">
+  <g id="accessory-anchor" class="body-react">
     <!-- Torso -->
     <g fill="#DE886D">
       <rect x="2" y="6" width="11" height="7"/>
     </g>
-    <!-- Arms (clenched, slightly raised) -->
+    <!-- Arms -->
     <g fill="#DE886D">
-      <rect x="0" y="8" width="2" height="2"/>
-      <rect x="13" y="8" width="2" height="2"/>
+      <g class="arm-l-react"><rect x="0" y="9" width="2" height="2"/></g>
+      <rect x="13" y="9" width="2" height="2"/>
     </g>
-    <!-- Eyes (angry squint) -->
-    <g class="eyes-angry" fill="#000">
+    <!-- Eyes -->
+    <g class="eyes-react" fill="#000">
       <rect x="4" y="8" width="1" height="2"/>
       <rect x="10" y="8" width="1" height="2"/>
     </g>
-    <!-- Angry eyebrows -->
-    <g fill="#000" opacity="0.7">
-      <rect x="3" y="7" width="2" height="1" transform="rotate(10 4 7.5)"/>
-      <rect x="10" y="7" width="2" height="1" transform="rotate(-10 11 7.5)"/>
+    <!-- Steam puffs -->
+    <g class="steam" fill="#E53935">
+      <rect x="10" y="-2" width="3" height="1"/>
+      <rect x="11" y="-3" width="1" height="3"/>
     </g>
-
-    <!-- Steam puffs above head -->
-    <g class="steam1" fill="#FFF">
-      <rect x="5" y="-2" width="2" height="1"/>
-      <rect x="4" y="-3" width="2" height="1"/>
-    </g>
-    <g class="steam2" fill="#FFF">
-      <rect x="8" y="-2" width="2" height="1"/>
-      <rect x="9" y="-4" width="2" height="1"/>
-    </g>
-    <g class="steam3" fill="#FFF">
-      <rect x="6" y="-3" width="2" height="1"/>
-      <rect x="7" y="-5" width="1" height="1"/>
-    </g>
-
-    <!-- Anger vein (cross mark, top-right) -->
-    <g class="vein" fill="#E53935" transform="translate(11, -1)">
-      <rect x="0" y="1" width="3" height="1"/>
-      <rect x="1" y="0" width="1" height="3"/>
+    <!-- Sigh puff cloud (right side of face) -->
+    <g class="sigh-cloud" fill="#FFF" opacity="0.85">
+      <rect x="14" y="9" width="2" height="1"/>
+      <rect x="15" y="8" width="2" height="1"/>
+      <rect x="16" y="7" width="2" height="1"/>
     </g>
   </g>
 </svg>
