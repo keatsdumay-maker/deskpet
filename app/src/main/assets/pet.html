@@ -208,7 +208,9 @@ function autoReturn(ms){if(stateTimer)clearTimeout(stateTimer);stateTimer=setTim
 
 function setAccessory(type){
   var acc2=document.getElementById('accessory2');
-  if(type==='none'||!type){acc2.innerHTML='';return;}
+  if(type==='none'||!type){acc2.innerHTML='';acc2.style.bottom='40%';return;}
+  if(type==='halo'){acc2.style.bottom='40%';}
+  else{acc2.style.bottom='33%';}
   acc2.innerHTML='<img src="svg/acc-'+type+'.svg" style="width:28px;height:auto;image-rendering:pixelated;display:block">';
 }
 
