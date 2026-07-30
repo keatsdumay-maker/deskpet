@@ -264,14 +264,16 @@ class OverlayService : Service() {
     }
 
     private fun checkKeyboard() {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        val visible = imm.isAcceptingText
-        if (visible && !wasKeyboardVisible) {
-            handler.post { overlayView?.evaluateJavascript("setState('typing')", null) }
-        } else if (!visible && wasKeyboardVisible) {
-            handler.post { overlayView?.evaluateJavascript("setState('idle')", null) }
-        }
-        wasKeyboardVisible = visible
+        try {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager ?: return
+            val visible = imm.isAcceptingText
+            if (visible && !wasKeyboardVisible) {
+                handler.post { overlayView?.evaluateJavascript("setState('typing')", null) }
+            } else if (!visible && wasKeyboardVisible) {
+                handler.post { overlayView?.evaluateJavascript("setState('idle')", null) }
+            }
+            wasKeyboardVisible = visible
+        } catch (_: Exception) {}
     }
 
     private fun showChatDialog() {
