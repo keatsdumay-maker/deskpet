@@ -176,7 +176,7 @@ class OverlayService : Service() {
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
         handler.postDelayed(networkCheckRunnable, 5000)
-        handler.postDelayed(keyboardCheckRunnable, 2000)
+        // keyboard check disabled: causes crash on some devices
         startWandering()
     }
 
@@ -234,21 +234,25 @@ class OverlayService : Service() {
     }
 
     private fun setupOrientationListener() {
-        orientationListener = object : OrientationEventListener(this) {
-            private var lastOri = -1
-            override fun onOrientationChanged(orientation: Int) {
-                if (orientation == ORIENTATION_UNKNOWN) return
-                val cur = if (orientation in 45..135 || orientation in 225..315) 1 else 0
-                if (cur != lastOri) {
-                    lastOri = cur
-                    if (cur == 1) handler.post {
-                        overlayView?.evaluateJavascript(
-                            "setState('fallen');showBubble('啊——','whisper',2000);setTimeout(()=>setState('idle'),3000)", null)
-                    }
+        try {
+            orientationListener = object : OrientationEventListener(this) {
+                private var lastOri = -1
+                override fun onOrientationChanged(orientation: Int) {
+                    try {
+                        if (orientation == ORIENTATION_UNKNOWN) return
+                        val cur = if (orientation in 45..135 || orientation in 225..315) 1 else 0
+                        if (cur != lastOri) {
+                            lastOri = cur
+                            if (cur == 1) handler.post {
+                                overlayView?.evaluateJavascript(
+                                    "setState('fallen');showBubble('啊——','whisper',2000);setTimeout(()=>setState('idle'),3000)", null)
+                            }
+                        }
+                    } catch (_: Exception) {}
                 }
             }
-        }
-        if (orientationListener?.canDetectOrientation() == true) orientationListener?.enable()
+            if (orientationListener?.canDetectOrientation() == true) orientationListener?.enable()
+        } catch (_: Exception) {}
     }
 
     private fun checkNetwork() {
