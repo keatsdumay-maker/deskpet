@@ -256,15 +256,17 @@ class OverlayService : Service() {
     }
 
     private fun checkNetwork() {
-        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val connected = cm.getNetworkCapabilities(cm.activeNetwork)
-            ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-        if (wasNetworkConnected && !connected) {
-            handler.post { overlayView?.evaluateJavascript("setState('alert');showBubble('网没了？！','yell',3000)", null) }
-        } else if (!wasNetworkConnected && connected) {
-            handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('回来了','love',2000)", null) }
-        }
-        wasNetworkConnected = connected
+        try {
+            val cm = getSystemService(CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+            val connected = cm.getNetworkCapabilities(cm.activeNetwork)
+                ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+            if (wasNetworkConnected && !connected) {
+                handler.post { overlayView?.evaluateJavascript("setState('alert');showBubble('网没了？！','yell',3000)", null) }
+            } else if (!wasNetworkConnected && connected) {
+                handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('回来了','love',2000)", null) }
+            }
+            wasNetworkConnected = connected
+        } catch (_: Exception) {}
     }
 
     private fun checkKeyboard() {
@@ -282,6 +284,7 @@ class OverlayService : Service() {
 
     private fun showChatDialog() {
         handler.post {
+          try {
             val editText = EditText(this).apply {
                 hint = "说点什么..."
                 setSingleLine(false)
@@ -304,6 +307,7 @@ class OverlayService : Service() {
                 .create()
             dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
             dialog.show()
+          } catch (_: Exception) {}
         }
     }
 
