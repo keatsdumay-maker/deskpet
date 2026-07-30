@@ -131,20 +131,20 @@ class OverlayService : Service() {
 
     private fun sendScreenshotToVPS(b64: String) {
         try {
-            val url = java.net.URL("$VPS_URL/emo/screenshot_analyze")
+            val vpsBase = "http://8.141.106.232:5000"
+            val url = java.net.URL(vpsBase + "/emo/screenshot_analyze")
             val conn = url.openConnection() as java.net.HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json")
             conn.doOutput = true
             conn.connectTimeout = 10000
             conn.readTimeout = 15000
-            val body = "{"image":"$b64"}"
+            val body = "{\"image\":\"" + b64 + "\"}"
             conn.outputStream.write(body.toByteArray())
-            val code = conn.responseCode
+            conn.responseCode
             conn.disconnect()
         } catch (_: Exception) {}
     }
-
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
