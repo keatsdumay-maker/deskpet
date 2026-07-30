@@ -48,6 +48,15 @@ class OverlayService : Service() {
         }
     }
 
+
+    // === ANDROID JS BRIDGE ===
+    inner class AndroidBridge {
+        @android.webkit.JavascriptInterface
+        fun petRunAway() {
+            handler.post { triggerRunAway() }
+        }
+    }
+
     companion object {
         private const val CHANNEL_ID = "pet_overlay"
         private const val NOTIFICATION_ID = 1001
@@ -98,6 +107,7 @@ class OverlayService : Service() {
                 cacheMode = WebSettings.LOAD_DEFAULT
             }
             webViewClient = WebViewClient()
+            addJavascriptInterface(AndroidBridge(), "Android")
             loadUrl("file:///android_asset/pet.html")
             setOnTouchListener(createTouchListener())
         }
@@ -274,6 +284,46 @@ class OverlayService : Service() {
                 handler.postDelayed(this, 30000)
             }
         }, 30000)
+    }
+
+
+    fun triggerRunAway() {
+        val dm = resources.displayMetrics
+        val curX = params?.x ?: 0
+        val curY = params?.y ?: 0
+        // pick a random direction to flee
+        val goRight = (Math.random() > 0.5)
+        val targetX = if (goRight) dm.widthPixels + 300 else -dpToPx(PET_SIZE_DP) - 300
+        val anim = android.animation.ValueAnimator.ofFloat(0f, 1f)
+        anim.duration = 600
+        anim.addUpdateListener { va ->
+            val f = va.animatedFraction
+            params?.x = curX + ((targetX - curX) * f).toInt()
+            try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
+        }
+        anim.start()
+        // come back after 6 seconds
+        handler.postDelayed({
+            val returnX = (100..dm.widthPixels - dpToPx(PET_SIZE_DP)).random()
+            val returnY = (200..dm.heightPixels / 2).random()
+            val anim2 = android.animation.ValueAnimator.ofFloat(0f, 1f)
+            anim2.duration = 500
+            val startX = params?.x ?: targetX
+            anim2.addUpdateListener { va ->
+                val f = va.animatedFraction
+                params?.x = startX + ((returnX - startX) * f).toInt()
+                params?.y = curY + ((returnY - curY) * f).toInt()
+                try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
+            }
+            anim2.addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    handler.post {
+                        overlayView?.evaluateJavascript("setState('idle');showBubble('...回来了','whisper',2000)", null)
+                    }
+                }
+            })
+            anim2.start()
+        }, 6000)
     }
 
     private fun onFling(dx: Int, dy: Int) {
