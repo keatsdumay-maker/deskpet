@@ -318,7 +318,7 @@ class OverlayService : Service() {
                 }
                 val jsStr = sb.toString()
                 handler.post { overlayView?.evaluateJavascript(
-                    "setState('happy');showBubble('$jsStr','love',6000)", null) }
+                    "showBubble('$jsStr','love',6000);autoReturn(7000)", null) }
             } catch (_: Exception) {
                 handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('没收到...','whisper',3000)", null) }
             }
