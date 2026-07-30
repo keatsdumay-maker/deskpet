@@ -305,7 +305,7 @@ class OverlayService : Service() {
                 conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
                 val resp = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
-                val reply = extractReply(resp).take(60)
+                val reply = extractReply(resp).take(20)
                 // encode all non-ascii and special chars as unicode escapes
                 val sb = StringBuilder()
                 for (c in reply) {
