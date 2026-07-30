@@ -2,6 +2,12 @@ package com.shenchen.deskpet.service
 
 import android.app.*
 import android.content.*
+import android.media.ImageReader
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.graphics.Bitmap
+import android.graphics.PixelFormat as PF
+import android.util.Base64
 import android.graphics.PixelFormat
 import android.os.*
 import android.view.*
@@ -26,6 +32,9 @@ class OverlayService : Service() {
     private var hasMoved = false
 
     private val handler = Handler(Looper.getMainLooper())
+    private var mediaProjection: MediaProjection? = null
+    private var imageReader: ImageReader? = null
+    private var lastScreenshotTime = 0L
     private var usageTracker: UsageTracker? = null
     private var screenshotObserver: ScreenshotObserver? = null
     private var batteryReceiver: BroadcastReceiver? = null
@@ -65,6 +74,76 @@ class OverlayService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val resultCode = intent?.getIntExtra("mp_result_code", -1) ?: -1
+        val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra("mp_data", Intent::class.java)
+        } else {
+            @Suppress("DEPRECATION") intent?.getParcelableExtra("mp_data")
+        }
+        if (resultCode != -1 && data != null) {
+            val mpm = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            mediaProjection = mpm.getMediaProjection(resultCode, data)
+            setupImageReader()
+        }
+        return START_NOT_STICKY
+    }
+
+    private fun setupImageReader() {
+        val dm = resources.displayMetrics
+        val w = dm.widthPixels / 2  // half res to save bandwidth
+        val h = dm.heightPixels / 2
+        imageReader = ImageReader.newInstance(w, h, android.graphics.PixelFormat.RGBA_8888, 2)
+        mediaProjection?.createVirtualDisplay(
+            "pet_capture", w, h, dm.densityDpi,
+            android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            imageReader?.surface, null, null
+        )
+    }
+
+    fun captureAndSend() {
+        val now = System.currentTimeMillis()
+        if (now - lastScreenshotTime < 60_000) return  // max once per minute
+        lastScreenshotTime = now
+        val reader = imageReader ?: return
+        Thread {
+            try {
+                val image = reader.acquireLatestImage() ?: return@Thread
+                val planes = image.planes
+                val buffer = planes[0].buffer
+                val pixelStride = planes[0].pixelStride
+                val rowStride = planes[0].rowStride
+                val rowPadding = rowStride - pixelStride * image.width
+                val bmp = Bitmap.createBitmap(
+                    image.width + rowPadding / pixelStride,
+                    image.height, Bitmap.Config.ARGB_8888
+                )
+                bmp.copyPixelsFromBuffer(buffer)
+                image.close()
+                val out = java.io.ByteArrayOutputStream()
+                bmp.compress(Bitmap.CompressFormat.JPEG, 40, out)
+                val b64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
+                sendScreenshotToVPS(b64)
+            } catch (_: Exception) {}
+        }.start()
+    }
+
+    private fun sendScreenshotToVPS(b64: String) {
+        try {
+            val url = java.net.URL("$VPS_URL/emo/screenshot_analyze")
+            val conn = url.openConnection() as java.net.HttpURLConnection
+            conn.requestMethod = "POST"
+            conn.setRequestProperty("Content-Type", "application/json")
+            conn.doOutput = true
+            conn.connectTimeout = 10000
+            conn.readTimeout = 15000
+            val body = "{"image":"$b64"}"
+            conn.outputStream.write(body.toByteArray())
+            val code = conn.responseCode
+            conn.disconnect()
+        } catch (_: Exception) {}
+    }
 
     override fun onCreate() {
         super.onCreate()
