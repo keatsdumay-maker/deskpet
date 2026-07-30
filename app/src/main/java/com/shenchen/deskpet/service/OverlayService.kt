@@ -47,12 +47,6 @@ class OverlayService : Service() {
     private var orientationListener: OrientationEventListener? = null
 
     private var wasNetworkConnected = true
-    private val networkCheckRunnable = object : Runnable {
-        override fun run() {
-            checkNetwork()
-            handler.postDelayed(this, 5000)
-        }
-    }
 
     private var wasKeyboardVisible = false
     private val keyboardCheckRunnable = object : Runnable {
@@ -175,7 +169,6 @@ class OverlayService : Service() {
         lastInteractionTime = System.currentTimeMillis()
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
-        handler.postDelayed(networkCheckRunnable, 5000)
         // keyboard check disabled: causes crash on some devices
         startWandering()
     }
@@ -231,6 +224,25 @@ class OverlayService : Service() {
         registerReceiver(batteryReceiver, filter)
         NotificationListener.onTrigger = { word, level -> onTriggerWord(word, level) }
         NotificationListener.onAnyNotification = { pkg, title -> onAnyNotification(pkg, title) }
+
+        // Network detection via broadcast
+        val netFilter = IntentFilter().apply {
+            addAction("android.net.conn.CONNECTIVITY_CHANGE")
+        }
+        registerReceiver(object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context?, intent: Intent?) {
+                try {
+                    val cm = getSystemService(CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+                    val connected = cm.activeNetworkInfo?.isConnected == true
+                    if (wasNetworkConnected && !connected) {
+                        handler.post { overlayView?.evaluateJavascript("setState('alert');showBubble('网没了？！','yell',3000)", null) }
+                    } else if (!wasNetworkConnected && connected) {
+                        handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('回来了','love',2000)", null) }
+                    }
+                    wasNetworkConnected = connected
+                } catch (_: Exception) {}
+            }
+        }, netFilter)
     }
 
     private fun setupOrientationListener() {
@@ -255,19 +267,7 @@ class OverlayService : Service() {
         } catch (_: Exception) {}
     }
 
-    private fun checkNetwork() {
-        try {
-            val cm = getSystemService(CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
-            val connected = cm.getNetworkCapabilities(cm.activeNetwork)
-                ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-            if (wasNetworkConnected && !connected) {
-                handler.post { overlayView?.evaluateJavascript("setState('alert');showBubble('网没了？！','yell',3000)", null) }
-            } else if (!wasNetworkConnected && connected) {
-                handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('回来了','love',2000)", null) }
-            }
-            wasNetworkConnected = connected
-        } catch (_: Exception) {}
-    }
+
 
     private fun checkKeyboard() {
         try {
@@ -477,7 +477,7 @@ class OverlayService : Service() {
         val targetY = (curY + dy * 2).coerceIn(0, dm.heightPixels)
         val anim = android.animation.ValueAnimator.ofFloat(0f, 1f)
         handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingOut&&window.petEngine.onFlingOut()", null) }
-        anim.duration = 300
+        anim.duration = 500
         anim.addUpdateListener { va ->
             val f = va.animatedFraction
             params?.x = curX + ((targetX - curX) * f).toInt()
@@ -489,7 +489,7 @@ class OverlayService : Service() {
             params?.x = (100..dm.widthPixels/2).random(); params?.y = (200..dm.heightPixels/2).random()
             try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
             handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingBack&&window.petEngine.onFlingBack()", null) }
-        }, 1800)
+        }, 3000)
     }
 
     private fun createTouchListener(): View.OnTouchListener {
