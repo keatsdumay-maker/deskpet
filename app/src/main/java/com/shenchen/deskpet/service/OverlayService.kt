@@ -301,13 +301,14 @@ class OverlayService : Service() {
                 conn.doOutput = true
                 conn.connectTimeout = 15000
                 conn.readTimeout = 20000
-                val escaped = message.replace("\\", "\\\\").replace("\"", "\\\"")
-                conn.outputStream.write("{\"message\":\"$escaped\"}".toByteArray())
+                val body = org.json.JSONObject().put("message", message).toString()
+                conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
                 val resp = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
-                val reply = extractReply(resp)
-                val safe = reply.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'").take(80)
-                handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('$safe','love',6000)", null) }
+                val reply = extractReply(resp).take(80)
+                val replyEsc = reply.replace("\\", "\\\\").replace("`", "\\`")
+                handler.post { overlayView?.evaluateJavascript(
+                    "(function(){var r=`$replyEsc`;setState('happy');showBubble(r,'love',6000);})()", null) }
             } catch (_: Exception) {
                 handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('没收到...','whisper',3000)", null) }
             }
