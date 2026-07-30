@@ -509,8 +509,8 @@ class OverlayService : Service() {
                         val dy = (params?.y ?: 0) - initialY
                         val speed = (Math.abs(dx) + Math.abs(dy)).toFloat() / elapsed.coerceAtLeast(1)
                         when {
-                            speed > 0.8f -> onFling(dx, dy)
-                            speed > 0.5f -> overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
+                            speed > 1.8f -> onFling(dx, dy)
+                            speed > 1.0f -> overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
                             else -> handler.post { overlayView?.evaluateJavascript("setState('idle')", null) }
                         }
                     }
