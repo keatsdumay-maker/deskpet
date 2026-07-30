@@ -306,12 +306,17 @@ class OverlayService : Service() {
                 val resp = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
                 val reply = extractReply(resp).take(60)
-                // encode as unicode escapes so no special chars can break JS
-                val jsStr = reply.map { c ->
-                    if (c.code > 127 || c == ''' || c == '"' || c == '\\' || c == '`')
-                        "\\u%04x".format(c.code)
-                    else c.toString()
-                }.joinToString("")
+                // encode all non-ascii and special chars as unicode escapes
+                val sb = StringBuilder()
+                for (c in reply) {
+                    val code = c.code
+                    if (code > 127 || code == 39 || code == 34 || code == 92 || code == 96) {
+                        sb.append("\\u%04x".format(code))
+                    } else {
+                        sb.append(c)
+                    }
+                }
+                val jsStr = sb.toString()
                 handler.post { overlayView?.evaluateJavascript(
                     "setState('happy');showBubble('$jsStr','love',6000)", null) }
             } catch (_: Exception) {
