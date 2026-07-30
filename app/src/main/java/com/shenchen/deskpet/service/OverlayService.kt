@@ -305,10 +305,15 @@ class OverlayService : Service() {
                 conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
                 val resp = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
-                val reply = extractReply(resp).take(80)
-                val replyEsc = reply.replace("\\", "\\\\").replace("`", "\\`")
+                val reply = extractReply(resp).take(60)
+                // encode as unicode escapes so no special chars can break JS
+                val jsStr = reply.map { c ->
+                    if (c.code > 127 || c == ''' || c == '"' || c == '\\' || c == '`')
+                        "\\u%04x".format(c.code)
+                    else c.toString()
+                }.joinToString("")
                 handler.post { overlayView?.evaluateJavascript(
-                    "(function(){var r=`$replyEsc`;setState('happy');showBubble(r,'love',6000);})()", null) }
+                    "setState('happy');showBubble('$jsStr','love',6000)", null) }
             } catch (_: Exception) {
                 handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('没收到...','whisper',3000)", null) }
             }
