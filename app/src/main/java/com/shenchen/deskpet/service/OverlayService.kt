@@ -19,7 +19,7 @@ import android.webkit.WebViewClient
 import android.webkit.WebSettings
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.appcompat.app.AlertDialog
+import android.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import java.util.Calendar
 import kotlin.math.abs
@@ -287,7 +287,7 @@ class OverlayService : Service() {
                 addView(editText)
                 setPadding(20, 20, 20, 20)
             }
-            val dialog = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            val dialog = AlertDialog.Builder(this)
                 .setTitle("🦀")
                 .setView(layout)
                 .setPositiveButton("发送") { _, _ ->
