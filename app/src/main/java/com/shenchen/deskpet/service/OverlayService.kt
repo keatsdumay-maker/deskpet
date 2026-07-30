@@ -165,7 +165,6 @@ class OverlayService : Service() {
         startForeground(NOTIFICATION_ID, buildNotification(getWhisper()))
         setupOverlay()
         setupSensors()
-        setupOrientationListener()
         lastInteractionTime = System.currentTimeMillis()
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
@@ -245,27 +244,7 @@ class OverlayService : Service() {
         }, netFilter)
     }
 
-    private fun setupOrientationListener() {
-        try {
-            orientationListener = object : OrientationEventListener(this) {
-                private var lastOri = -1
-                override fun onOrientationChanged(orientation: Int) {
-                    try {
-                        if (orientation == ORIENTATION_UNKNOWN) return
-                        val cur = if (orientation in 45..135 || orientation in 225..315) 1 else 0
-                        if (cur != lastOri) {
-                            lastOri = cur
-                            if (cur == 1) handler.post {
-                                overlayView?.evaluateJavascript(
-                                    "setState('fallen');showBubble('啊——','whisper',2000);setTimeout(()=>setState('idle'),3000)", null)
-                            }
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-            if (orientationListener?.canDetectOrientation() == true) orientationListener?.enable()
-        } catch (_: Exception) {}
-    }
+
 
 
 
@@ -327,7 +306,7 @@ class OverlayService : Service() {
                 val resp = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
                 val reply = extractReply(resp)
-                val safe = reply.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'").take(50)
+                val safe = reply.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'").take(80)
                 handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('$safe','love',6000)", null) }
             } catch (_: Exception) {
                 handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('没收到...','whisper',3000)", null) }
@@ -337,10 +316,15 @@ class OverlayService : Service() {
 
     private fun extractReply(json: String): String {
         return try {
-            val start = json.indexOf("\"reply\":\"") + 9
-            val end = json.indexOf("\"", start)
-            if (start > 8 && end > start) json.substring(start, end) else "嗯？"
-        } catch (_: Exception) { "嗯？" }
+            val obj = org.json.JSONObject(json)
+            obj.optString("reply", "嗯？")
+        } catch (_: Exception) {
+            try {
+                val start = json.indexOf("\"reply\":\"") + 9
+                val end = json.indexOf("\"", start)
+                if (start > 8 && end > start) json.substring(start, end) else "嗯？"
+            } catch (_: Exception) { "嗯？" }
+        }
     }
 
     private fun onAppChanged(pkg: String) {
@@ -477,7 +461,7 @@ class OverlayService : Service() {
         val targetY = (curY + dy * 2).coerceIn(0, dm.heightPixels)
         val anim = android.animation.ValueAnimator.ofFloat(0f, 1f)
         handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingOut&&window.petEngine.onFlingOut()", null) }
-        anim.duration = 500
+        anim.duration = 800
         anim.addUpdateListener { va ->
             val f = va.animatedFraction
             params?.x = curX + ((targetX - curX) * f).toInt()
@@ -489,7 +473,7 @@ class OverlayService : Service() {
             params?.x = (100..dm.widthPixels/2).random(); params?.y = (200..dm.heightPixels/2).random()
             try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
             handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingBack&&window.petEngine.onFlingBack()", null) }
-        }, 3000)
+        }, 4000)
     }
 
     private fun createTouchListener(): View.OnTouchListener {
@@ -558,7 +542,6 @@ class OverlayService : Service() {
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
         usageTracker?.stop(); screenshotObserver?.stop()
-        orientationListener?.disable()
         batteryReceiver?.let { unregisterReceiver(it) }
         overlayView?.let { windowManager?.removeView(it); it.destroy() }
         overlayView = null
