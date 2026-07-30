@@ -9,11 +9,17 @@ import android.graphics.Bitmap
 import android.graphics.PixelFormat as PF
 import android.util.Base64
 import android.graphics.PixelFormat
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.*
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebSettings
+import android.widget.EditText
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import java.util.Calendar
 import kotlin.math.abs
@@ -38,27 +44,40 @@ class OverlayService : Service() {
     private var usageTracker: UsageTracker? = null
     private var screenshotObserver: ScreenshotObserver? = null
     private var batteryReceiver: BroadcastReceiver? = null
+    private var orientationListener: OrientationEventListener? = null
 
-    // Loneliness system
+    private var wasNetworkConnected = true
+    private val networkCheckRunnable = object : Runnable {
+        override fun run() {
+            checkNetwork()
+            handler.postDelayed(this, 5000)
+        }
+    }
+
+    private var wasKeyboardVisible = false
+    private val keyboardCheckRunnable = object : Runnable {
+        override fun run() {
+            checkKeyboard()
+            handler.postDelayed(this, 1000)
+        }
+    }
+
     private var lastInteractionTime = 0L
     private var lonelinessLevel = 0
     private val lonelinessRunnable = object : Runnable {
         override fun run() {
             checkLoneliness()
-            handler.postDelayed(this, 60_000) // check every minute
+            handler.postDelayed(this, 60_000)
         }
     }
 
-    // Whisper system
     private val whisperRunnable = object : Runnable {
         override fun run() {
             updateWhisper()
-            handler.postDelayed(this, 3600_000) // every hour
+            handler.postDelayed(this, 3600_000)
         }
     }
 
-
-    // === ANDROID JS BRIDGE ===
     inner class AndroidBridge {
         @android.webkit.JavascriptInterface
         fun petRunAway() {
@@ -71,6 +90,7 @@ class OverlayService : Service() {
         private const val NOTIFICATION_ID = 1001
         private const val PET_SIZE_DP = 130
         private const val PET_HEIGHT_DP = 150
+        private const val VPS = "http://8.141.106.232:5000"
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -92,7 +112,7 @@ class OverlayService : Service() {
 
     private fun setupImageReader() {
         val dm = resources.displayMetrics
-        val w = dm.widthPixels / 2  // half res to save bandwidth
+        val w = dm.widthPixels / 2
         val h = dm.heightPixels / 2
         imageReader = ImageReader.newInstance(w, h, android.graphics.PixelFormat.RGBA_8888, 2)
         mediaProjection?.createVirtualDisplay(
@@ -104,7 +124,7 @@ class OverlayService : Service() {
 
     fun captureAndSend() {
         val now = System.currentTimeMillis()
-        if (now - lastScreenshotTime < 60_000) return  // max once per minute
+        if (now - lastScreenshotTime < 60_000) return
         lastScreenshotTime = now
         val reader = imageReader ?: return
         Thread {
@@ -131,8 +151,7 @@ class OverlayService : Service() {
 
     private fun sendScreenshotToVPS(b64: String) {
         try {
-            val vpsBase = "http://8.141.106.232:5000"
-            val url = java.net.URL(vpsBase + "/emo/screenshot_analyze")
+            val url = java.net.URL("$VPS/emo/screenshot_analyze")
             val conn = url.openConnection() as java.net.HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json")
@@ -145,38 +164,35 @@ class OverlayService : Service() {
             conn.disconnect()
         } catch (_: Exception) {}
     }
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification(getWhisper()))
         setupOverlay()
         setupSensors()
+        setupOrientationListener()
         lastInteractionTime = System.currentTimeMillis()
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
+        handler.postDelayed(networkCheckRunnable, 5000)
+        handler.postDelayed(keyboardCheckRunnable, 2000)
         startWandering()
     }
 
-    private fun dpToPx(dp: Int): Int {
-        return (dp * resources.displayMetrics.density).toInt()
-    }
+    private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
 
     private fun setupOverlay() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-
         params = WindowManager.LayoutParams(
-            dpToPx(PET_SIZE_DP),
-            dpToPx(PET_HEIGHT_DP),
+            dpToPx(PET_SIZE_DP), dpToPx(PET_HEIGHT_DP),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 50
-            y = 300
+            x = 50; y = 300
         }
-
         overlayView = WebView(this).apply {
             setBackgroundColor(0x00000000)
             settings.apply {
@@ -190,26 +206,14 @@ class OverlayService : Service() {
             loadUrl("file:///android_asset/pet.html")
             setOnTouchListener(createTouchListener())
         }
-
         windowManager?.addView(overlayView, params)
     }
 
-    // === SENSORS ===
-
     private fun setupSensors() {
-        // App detection
-        usageTracker = UsageTracker(this) { pkg ->
-            onAppChanged(pkg)
-        }
+        usageTracker = UsageTracker(this) { pkg -> onAppChanged(pkg) }
         usageTracker?.start()
-
-        // Screenshot detection
-        screenshotObserver = ScreenshotObserver {
-            onScreenshot()
-        }
+        screenshotObserver = ScreenshotObserver { onScreenshot() }
         screenshotObserver?.start()
-
-        // Battery detection
         batteryReceiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context?, intent: Intent?) {
                 when (intent?.action) {
@@ -229,17 +233,113 @@ class OverlayService : Service() {
         NotificationListener.onAnyNotification = { pkg, title -> onAnyNotification(pkg, title) }
     }
 
-    // === REACTIONS ===
+    private fun setupOrientationListener() {
+        orientationListener = object : OrientationEventListener(this) {
+            private var lastOri = -1
+            override fun onOrientationChanged(orientation: Int) {
+                if (orientation == ORIENTATION_UNKNOWN) return
+                val cur = if (orientation in 45..135 || orientation in 225..315) 1 else 0
+                if (cur != lastOri) {
+                    lastOri = cur
+                    if (cur == 1) handler.post {
+                        overlayView?.evaluateJavascript(
+                            "setState('fallen');showBubble('啊——','whisper',2000);setTimeout(()=>setState('idle'),3000)", null)
+                    }
+                }
+            }
+        }
+        if (orientationListener?.canDetectOrientation() == true) orientationListener?.enable()
+    }
+
+    private fun checkNetwork() {
+        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connected = cm.getNetworkCapabilities(cm.activeNetwork)
+            ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        if (wasNetworkConnected && !connected) {
+            handler.post { overlayView?.evaluateJavascript("setState('alert');showBubble('网没了？！','yell',3000)", null) }
+        } else if (!wasNetworkConnected && connected) {
+            handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('回来了','love',2000)", null) }
+        }
+        wasNetworkConnected = connected
+    }
+
+    private fun checkKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        val visible = imm.isAcceptingText
+        if (visible && !wasKeyboardVisible) {
+            handler.post { overlayView?.evaluateJavascript("setState('typing')", null) }
+        } else if (!visible && wasKeyboardVisible) {
+            handler.post { overlayView?.evaluateJavascript("setState('idle')", null) }
+        }
+        wasKeyboardVisible = visible
+    }
+
+    private fun showChatDialog() {
+        handler.post {
+            val editText = EditText(this).apply {
+                hint = "说点什么..."
+                setSingleLine(false)
+                maxLines = 4
+                setPadding(40, 20, 40, 20)
+            }
+            val layout = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(editText)
+                setPadding(20, 20, 20, 20)
+            }
+            val dialog = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+                .setTitle("🦀")
+                .setView(layout)
+                .setPositiveButton("发送") { _, _ ->
+                    val text = editText.text.toString().trim()
+                    if (text.isNotEmpty()) sendChatMessage(text)
+                }
+                .setNegativeButton("取消", null)
+                .create()
+            dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+            dialog.show()
+        }
+    }
+
+    private fun sendChatMessage(message: String) {
+        handler.post { overlayView?.evaluateJavascript("setState('thinking');showBubble('...','whisper',8000)", null) }
+        Thread {
+            try {
+                val url = java.net.URL("$VPS/emo/chat")
+                val conn = url.openConnection() as java.net.HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+                conn.connectTimeout = 15000
+                conn.readTimeout = 20000
+                val escaped = message.replace("\\", "\\\\").replace("\"", "\\\"")
+                conn.outputStream.write("{\"message\":\"$escaped\"}".toByteArray())
+                val resp = conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
+                val reply = extractReply(resp)
+                val safe = reply.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'").take(50)
+                handler.post { overlayView?.evaluateJavascript("setState('happy');showBubble('$safe','love',6000)", null) }
+            } catch (_: Exception) {
+                handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('没收到...','whisper',3000)", null) }
+            }
+        }.start()
+    }
+
+    private fun extractReply(json: String): String {
+        return try {
+            val start = json.indexOf("\"reply\":\"") + 9
+            val end = json.indexOf("\"", start)
+            if (start > 8 && end > start) json.substring(start, end) else "嗯？"
+        } catch (_: Exception) { "嗯？" }
+    }
 
     private fun onAppChanged(pkg: String) {
-        val js = "window.petEngine && window.petEngine.onAppChanged('$pkg')"
-        handler.post { overlayView?.evaluateJavascript(js, null) }
+        handler.post { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onAppChanged('$pkg')", null) }
         resetLoneliness()
     }
 
     private fun onScreenshot() {
-        val js = "window.petEngine && window.petEngine.onScreenshot()"
-        handler.post { overlayView?.evaluateJavascript(js, null) }
+        handler.post { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onScreenshot()", null) }
         resetLoneliness()
     }
 
@@ -260,102 +360,64 @@ class OverlayService : Service() {
         val now = System.currentTimeMillis()
         if (now - lastNotifTime < 30000) return
         lastNotifTime = now
-        val js = "window.petEngine && window.petEngine.onNotification && window.petEngine.onNotification('" + pkg.replace("'","") + "','" + title.replace("'","").take(20) + "')"
+        val js = "window.petEngine && window.petEngine.onNotification && window.petEngine.onNotification('" +
+            pkg.replace("'","") + "','" + title.replace("'","").take(20) + "')"
         handler.post { overlayView?.evaluateJavascript(js, null) }
     }
 
-
     private fun onCharging(connected: Boolean) {
-        val js = "window.petEngine && window.petEngine.onCharging($connected)"
-        handler.post { overlayView?.evaluateJavascript(js, null) }
+        handler.post { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onCharging($connected)", null) }
     }
 
     private fun onBatteryLow() {
-        val js = "window.petEngine && window.petEngine.onBatteryLow()"
-        handler.post { overlayView?.evaluateJavascript(js, null) }
+        handler.post { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onBatteryLow()", null) }
     }
-
-    // === LONELINESS ===
 
     private fun resetLoneliness() {
         lastInteractionTime = System.currentTimeMillis()
         if (lonelinessLevel > 0) {
             lonelinessLevel = 0
-            val js = "window.petEngine && window.petEngine.onLoneliness(0)"
-            handler.post { overlayView?.evaluateJavascript(js, null) }
+            handler.post { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLoneliness(0)", null) }
         }
     }
 
     private fun checkLoneliness() {
         val minutes = (System.currentTimeMillis() - lastInteractionTime) / 60_000
         val newLevel = when {
-            minutes >= 30 -> 5  // asleep
-            minutes >= 20 -> 4  // nodding off
-            minutes >= 15 -> 3  // yawning
-            minutes >= 10 -> 2  // bored
-            minutes >= 5 -> 1   // peeking
-            else -> 0
+            minutes >= 30 -> 5; minutes >= 20 -> 4; minutes >= 15 -> 3
+            minutes >= 10 -> 2; minutes >= 5 -> 1; else -> 0
         }
         if (newLevel != lonelinessLevel) {
             lonelinessLevel = newLevel
-            val js = "window.petEngine && window.petEngine.onLoneliness($newLevel)"
-            handler.post { overlayView?.evaluateJavascript(js, null) }
+            handler.post { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLoneliness($newLevel)", null) }
         }
     }
 
-    // === WHISPER NOTIFICATION ===
-
     private fun updateWhisper() {
-        val nm = getSystemService(NotificationManager::class.java)
-        nm.notify(NOTIFICATION_ID, buildNotification(getWhisper()))
+        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(getWhisper()))
     }
 
     private fun getWhisper(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val pool = when {
-            hour in 0..5 -> lateNight
-            hour in 6..8 -> morning
-            hour in 12..13 -> lunch
-            hour in 22..23 -> evening
-            else -> general
+            hour in 0..5 -> lateNight; hour in 6..8 -> morning
+            hour in 12..13 -> lunch; hour in 22..23 -> evening; else -> general
         }
         return pool.random()
     }
 
-    private val lateNight = listOf(
-        "都几点了还不睡...", "我困了你怎么还醒着", "把手机放下",
-        "熬夜对皮肤不好", "再不睡我生气了", "陪你到现在了快睡"
-    )
-    private val morning = listOf(
-        "早安", "起来了？", "今天也要好好的",
-        "醒了就喝口水", "早上好困"
-    )
-    private val lunch = listOf(
-        "吃饭了吗", "别忘了吃东西", "中午了该吃饭",
-        "饿了吧", "好好吃饭别光玩手机"
-    )
-    private val evening = listOf(
-        "准备睡了吗", "今天辛苦了", "晚安前记得看我一眼",
-        "明天见", "早点休息"
-    )
-    private val general = listOf(
-        "在呢", "你在干嘛", "蹲着看你",
-        "戳戳我嘛", "...", "我在这",
-        "有点无聊", "想你了", "你忙吧我看着你"
-    )
-
-    // === GESTURE ===
-
-    // === WANDERING ===
+    private val lateNight = listOf("都几点了还不睡...","我困了你怎么还醒着","把手机放下","熬夜对皮肤不好","再不睡我生气了","陪你到现在了快睡")
+    private val morning = listOf("早安","起来了？","今天也要好好的","醒了就喝口水","早上好困")
+    private val lunch = listOf("吃饭了吗","别忘了吃东西","中午了该吃饭","饿了吧","好好吃饭别光玩手机")
+    private val evening = listOf("准备睡了吗","今天辛苦了","晚安前记得看我一眼","明天见","早点休息")
+    private val general = listOf("在呢","你在干嘛","蹲着看你","戳戳我嘛","...","我在这","有点无聊","想你了","你忙吧我看着你")
 
     private fun startWandering() {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 if (Math.random() < 0.3) {
-                    val dx = (-45..45).random()
-                    val dy = (-25..25).random()
-                    params?.x = (params?.x ?: 0) + dx
-                    params?.y = (params?.y ?: 0) + dy
+                    val dx = (-45..45).random(); val dy = (-25..25).random()
+                    params?.x = (params?.x ?: 0) + dx; params?.y = (params?.y ?: 0) + dy
                     try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
                     val dir = if (dx < 0) "left" else "right"
                     handler.post { overlayView?.evaluateJavascript("setDirection('$dir');setState('walk');autoReturn(2000)", null) }
@@ -365,23 +427,18 @@ class OverlayService : Service() {
         }, 30000)
     }
 
-
     fun triggerRunAway() {
         val dm = resources.displayMetrics
-        val curX = params?.x ?: 0
-        val curY = params?.y ?: 0
-        // pick a random direction to flee
+        val curX = params?.x ?: 0; val curY = params?.y ?: 0
         val goRight = (Math.random() > 0.5)
         val targetX = if (goRight) dm.widthPixels + 300 else -dpToPx(PET_SIZE_DP) - 300
         val anim = android.animation.ValueAnimator.ofFloat(0f, 1f)
         anim.duration = 600
         anim.addUpdateListener { va ->
-            val f = va.animatedFraction
-            params?.x = curX + ((targetX - curX) * f).toInt()
+            params?.x = curX + ((targetX - curX) * va.animatedFraction).toInt()
             try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
         }
         anim.start()
-        // come back after 6 seconds
         handler.postDelayed({
             val returnX = (100..dm.widthPixels - dpToPx(PET_SIZE_DP)).random()
             val returnY = (200..dm.heightPixels / 2).random()
@@ -396,9 +453,7 @@ class OverlayService : Service() {
             }
             anim2.addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
-                    handler.post {
-                        overlayView?.evaluateJavascript("setState('idle');showBubble('...回来了','whisper',2000)", null)
-                    }
+                    handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('...回来了','whisper',2000)", null) }
                 }
             })
             anim2.start()
@@ -407,8 +462,7 @@ class OverlayService : Service() {
 
     private fun onFling(dx: Int, dy: Int) {
         val dm = resources.displayMetrics
-        val curX = params?.x ?: 0
-        val curY = params?.y ?: 0
+        val curX = params?.x ?: 0; val curY = params?.y ?: 0
         val targetX = if (dx > 0) dm.widthPixels + 200 else -dpToPx(PET_SIZE_DP) - 200
         val targetY = (curY + dy * 2).coerceIn(0, dm.heightPixels)
         val anim = android.animation.ValueAnimator.ofFloat(0f, 1f)
@@ -422,8 +476,7 @@ class OverlayService : Service() {
         }
         anim.start()
         handler.postDelayed({
-            params?.x = (100..dm.widthPixels/2).random()
-            params?.y = (200..dm.heightPixels/2).random()
+            params?.x = (100..dm.widthPixels/2).random(); params?.y = (200..dm.heightPixels/2).random()
             try { windowManager?.updateViewLayout(overlayView, params) } catch (_: Exception) {}
             handler.post { overlayView?.evaluateJavascript("window.petEngine.onFlingBack&&window.petEngine.onFlingBack()", null) }
         }, 1800)
@@ -433,13 +486,9 @@ class OverlayService : Service() {
         return View.OnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    initialX = params?.x ?: 0
-                    initialY = params?.y ?: 0
-                    initialTouchX = event.rawX
-                    initialTouchY = event.rawY
-                    touchStartTime = System.currentTimeMillis()
-                    hasMoved = false
-                    true
+                    initialX = params?.x ?: 0; initialY = params?.y ?: 0
+                    initialTouchX = event.rawX; initialTouchY = event.rawY
+                    touchStartTime = System.currentTimeMillis(); hasMoved = false; true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
@@ -447,8 +496,7 @@ class OverlayService : Service() {
                     if (abs(dx) > 10 || abs(dy) > 10) {
                         if (!hasMoved) handler.post { overlayView?.evaluateJavascript("setState('drag')", null) }
                         hasMoved = true
-                        params?.x = initialX + dx
-                        params?.y = initialY + dy
+                        params?.x = initialX + dx; params?.y = initialY + dy
                         windowManager?.updateViewLayout(overlayView, params)
                     }
                     true
@@ -459,78 +507,50 @@ class OverlayService : Service() {
                         when {
                             elapsed > 600 -> onLongPress()
                             System.currentTimeMillis() - lastTapTime < 300 -> onDoubleTap()
-                            else -> {
-                                lastTapTime = System.currentTimeMillis()
-                                onTap()
-                            }
+                            else -> { lastTapTime = System.currentTimeMillis(); onTap() }
                         }
                     } else {
                         val dx = (params?.x ?: 0) - initialX
                         val dy = (params?.y ?: 0) - initialY
                         val speed = (Math.abs(dx) + Math.abs(dy)).toFloat() / elapsed.coerceAtLeast(1)
-                        if (speed > 2.5f) { onFling(dx, dy) } else if (speed > 1.5f) {
-                            overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
-                        } else { handler.post { overlayView?.evaluateJavascript("setState('idle')", null) } }
+                        when {
+                            speed > 0.8f -> onFling(dx, dy)
+                            speed > 0.5f -> overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onShake()", null)
+                            else -> handler.post { overlayView?.evaluateJavascript("setState('idle')", null) }
+                        }
                     }
-                    resetLoneliness()
-                    true
+                    resetLoneliness(); true
                 }
                 else -> false
             }
         }
     }
 
-    private fun onTap() {
-        overlayView?.evaluateJavascript(
-            "window.petEngine && window.petEngine.onTap()", null
-        )
-    }
-
-    private fun onDoubleTap() {
-        overlayView?.evaluateJavascript(
-            "window.petEngine && window.petEngine.onDoubleTap()", null
-        )
-    }
-
-    private fun onLongPress() {
-        overlayView?.evaluateJavascript(
-            "window.petEngine && window.petEngine.onLongPress()", null
-        )
-    }
-
-    // === NOTIFICATION ===
+    private fun onTap() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onTap()", null) }
+    private fun onDoubleTap() { showChatDialog() }
+    private fun onLongPress() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLongPress()", null) }
 
     private fun buildNotification(text: String): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("DeskPet")
-            .setContentText(text)
+            .setContentTitle("DeskPet").setContentText(text)
             .setSmallIcon(android.R.drawable.ic_menu_compass)
-            .setOngoing(true)
-            .setSilent(true)
-            .build()
+            .setOngoing(true).setSilent(true).build()
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Pet",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply { setShowBadge(false) }
-            getSystemService(NotificationManager::class.java)
-                .createNotificationChannel(channel)
+            val channel = NotificationChannel(CHANNEL_ID, "Pet", NotificationManager.IMPORTANCE_LOW)
+                .apply { setShowBadge(false) }
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
     }
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
-        usageTracker?.stop()
-        screenshotObserver?.stop()
+        usageTracker?.stop(); screenshotObserver?.stop()
+        orientationListener?.disable()
         batteryReceiver?.let { unregisterReceiver(it) }
-        overlayView?.let {
-            windowManager?.removeView(it)
-            it.destroy()
-        }
+        overlayView?.let { windowManager?.removeView(it); it.destroy() }
         overlayView = null
         super.onDestroy()
     }
