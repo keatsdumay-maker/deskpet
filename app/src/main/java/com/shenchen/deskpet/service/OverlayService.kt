@@ -17,9 +17,6 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebSettings
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import java.util.Calendar
 import kotlin.math.abs
@@ -168,7 +165,6 @@ class OverlayService : Service() {
         lastInteractionTime = System.currentTimeMillis()
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
-        // keyboard check disabled: causes crash on some devices
         startWandering()
     }
 
@@ -224,7 +220,6 @@ class OverlayService : Service() {
         NotificationListener.onTrigger = { word, level -> onTriggerWord(word, level) }
         NotificationListener.onAnyNotification = { pkg, title -> onAnyNotification(pkg, title) }
 
-        // Network detection via broadcast
         val netFilter = IntentFilter().apply {
             addAction("android.net.conn.CONNECTIVITY_CHANGE")
         }
@@ -244,10 +239,6 @@ class OverlayService : Service() {
         }, netFilter)
     }
 
-
-
-
-
     private fun checkKeyboard() {
         try {
             val imm = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager ?: return
@@ -259,83 +250,6 @@ class OverlayService : Service() {
             }
             wasKeyboardVisible = visible
         } catch (_: Exception) {}
-    }
-
-    private fun showChatDialog() {
-        handler.post {
-          try {
-            val editText = EditText(this).apply {
-                hint = "说点什么..."
-                setSingleLine(false)
-                maxLines = 4
-                setPadding(40, 20, 40, 20)
-            }
-            val layout = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                addView(editText)
-                setPadding(20, 20, 20, 20)
-            }
-            val dialog = AlertDialog.Builder(this)
-                .setTitle("🦀")
-                .setView(layout)
-                .setPositiveButton("发送") { _, _ ->
-                    val text = editText.text.toString().trim()
-                    if (text.isNotEmpty()) sendChatMessage(text)
-                }
-                .setNegativeButton("取消", null)
-                .create()
-            dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
-            dialog.show()
-          } catch (_: Exception) {}
-        }
-    }
-
-    private fun sendChatMessage(message: String) {
-        handler.post { overlayView?.evaluateJavascript("setState('thinking');showBubble('...','whisper',8000)", null) }
-        Thread {
-            try {
-                val url = java.net.URL("$VPS/emo/chat")
-                val conn = url.openConnection() as java.net.HttpURLConnection
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.doOutput = true
-                conn.connectTimeout = 15000
-                conn.readTimeout = 20000
-                val body = org.json.JSONObject().put("message", message).toString()
-                conn.outputStream.write(body.toByteArray(Charsets.UTF_8))
-                val resp = conn.inputStream.bufferedReader().readText()
-                conn.disconnect()
-                val reply = extractReply(resp).take(20)
-                // encode all non-ascii and special chars as unicode escapes
-                val sb = StringBuilder()
-                for (c in reply) {
-                    val code = c.code
-                    if (code > 127 || code == 39 || code == 34 || code == 92 || code == 96) {
-                        sb.append("\\u%04x".format(code))
-                    } else {
-                        sb.append(c)
-                    }
-                }
-                val jsStr = sb.toString()
-                handler.post { overlayView?.evaluateJavascript(
-                    "showBubble('$jsStr','love',6000);autoReturn(7000)", null) }
-            } catch (_: Exception) {
-                handler.post { overlayView?.evaluateJavascript("setState('idle');showBubble('没收到...','whisper',3000)", null) }
-            }
-        }.start()
-    }
-
-    private fun extractReply(json: String): String {
-        return try {
-            val obj = org.json.JSONObject(json)
-            obj.optString("reply", "嗯？")
-        } catch (_: Exception) {
-            try {
-                val start = json.indexOf("\"reply\":\"") + 9
-                val end = json.indexOf("\"", start)
-                if (start > 8 && end > start) json.substring(start, end) else "嗯？"
-            } catch (_: Exception) { "嗯？" }
-        }
     }
 
     private fun onAppChanged(pkg: String) {
@@ -532,7 +446,7 @@ class OverlayService : Service() {
     }
 
     private fun onTap() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onTap()", null) }
-    private fun onDoubleTap() { showChatDialog() }
+    private fun onDoubleTap() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onDoubleTap()", null) }
     private fun onLongPress() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLongPress()", null) }
 
     private fun buildNotification(text: String): Notification {
