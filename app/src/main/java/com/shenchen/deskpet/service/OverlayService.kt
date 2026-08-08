@@ -42,6 +42,7 @@ class OverlayService : Service() {
     private var screenshotObserver: ScreenshotObserver? = null
     private var batteryReceiver: BroadcastReceiver? = null
     private var orientationListener: OrientationEventListener? = null
+    private var presenceManager: PresenceManager? = null
 
     private var wasNetworkConnected = true
 
@@ -166,6 +167,8 @@ class OverlayService : Service() {
         handler.postDelayed(lonelinessRunnable, 60_000)
         handler.postDelayed(whisperRunnable, 3600_000)
         startWandering()
+        presenceManager = PresenceManager(this)
+        presenceManager?.start()
     }
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
@@ -470,6 +473,7 @@ class OverlayService : Service() {
         batteryReceiver?.let { unregisterReceiver(it) }
         overlayView?.let { windowManager?.removeView(it); it.destroy() }
         overlayView = null
+        presenceManager?.stop()
         super.onDestroy()
     }
 }
